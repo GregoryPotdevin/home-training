@@ -2,216 +2,338 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Home Trainer – Contrôle Bluetooth</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#140f2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Home Trainer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#140f2b; --panel:#1f1842; --line:#342a66; --text:#f4f1ff; --muted:#a69cd6;
-    --accent:#ff4f8b; --accent2:#ffc83d; --ok:#38e0a6; --err:#ff4d5e; --blue:#4fc3ff;
+    --bg:#140f2b; --panel:#1f1842; --panel2:#2a2156; --line:#342a66; --text:#f4f1ff; --muted:#a69cd6;
+    --accent:#ff4f8b; --accent2:#ffc83d; --ok:#38e0a6; --blue:#4fc3ff;
+    --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
   }
-  *{box-sizing:border-box}
-  body{margin:0;color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh;
-    background:radial-gradient(1200px 600px at 10% -10%,#3b1f7a 0%,transparent 60%),radial-gradient(900px 500px at 110% 10%,#7a1f5c 0%,transparent 55%),var(--bg)}
-  .tile,.panel{border-radius:20px!important}
-  .coach{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#ff4f8b,#ff8a3d);
-    border-radius:20px;padding:14px 18px;margin-bottom:14px;box-shadow:0 10px 30px -10px rgba(255,79,139,.6)}
-  .coach .face{font-size:44px;line-height:1;animation:bob 1.6s ease-in-out infinite;flex:none}
-  .coach .say{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:24px;line-height:1.15;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.15)}
-  .coach .say small{display:block;font-family:Inter,sans-serif;font-weight:500;font-size:13px;opacity:.9;text-shadow:none;margin-top:2px}
-  @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-6px) rotate(4deg)}}
-  .food{margin-top:10px;font-size:14px}
-  .food .emo{font-size:26px;letter-spacing:2px;word-break:break-all;line-height:1.3}
-  .bar{height:10px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:6px}
-  .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .6s}
-  .toast{position:fixed;left:50%;top:18px;transform:translate(-50%,-250%);background:#fff;color:#2a1660;
-    font:700 17px Inter,sans-serif;padding:12px 20px;border-radius:99px;box-shadow:0 12px 30px rgba(0,0,0,.35);
-    transition:transform .45s cubic-bezier(.2,1.4,.4,1);z-index:20;white-space:nowrap}
-  .toast.show{transform:translate(-50%,0)}
-  #confetti{position:fixed;inset:0;pointer-events:none;z-index:15;width:100%;height:100%}
-  .pop{animation:pop .4s}
-  @keyframes pop{50%{transform:scale(1.18)}}
-  .wrap{max-width:880px;margin:0 auto;padding:20px 16px 40px}
-  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-  h1{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:28px;letter-spacing:.5px;margin:0;text-transform:uppercase}
-  h1 span{color:var(--accent)}
-  .status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
-  .dot{width:9px;height:9px;border-radius:50%;background:#555}
-  .dot.on{background:var(--ok);box-shadow:0 0 8px var(--ok)}
-  .dot.busy{background:var(--accent2)}
-  .btns{display:flex;gap:8px;flex-wrap:wrap}
-  button{font:600 14px Inter,sans-serif;border:1px solid var(--line);background:var(--panel);color:var(--text);
-    padding:10px 16px;border-radius:10px;cursor:pointer;transition:.15s}
-  button:hover{border-color:#3a404c}
-  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  button.primary:hover{filter:brightness(1.1)}
-  button:disabled{opacity:.45;cursor:not-allowed}
-  .msg{display:none;margin:0 0 16px;padding:12px 14px;border-radius:10px;font-size:14px;line-height:1.45;
-    background:#2a1a12;border:1px solid #5a3420;color:#ffd6c2}
-  .msg.show{display:block}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh;min-height:100dvh;
+    background:radial-gradient(900px 500px at 0% -10%,#3b1f7a 0%,transparent 60%),radial-gradient(700px 400px at 110% 0%,#7a1f5c 0%,transparent 55%),var(--bg);
+    background-attachment:fixed}
+  .wrap{max-width:520px;margin:0 auto;padding:calc(12px + var(--st)) 14px calc(28px + var(--sb))}
+  button{font:600 15px Inter,sans-serif;color:var(--text);border:none;cursor:pointer;touch-action:manipulation}
+  .num{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+  .lbl{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:14px 16px;margin-top:10px}
+  .hidden{display:none!important}
+  body:not(.live) .live-only{display:none!important}
+  body.live .off-only{display:none!important}
+
+  /* ---------- Écran déconnecté ---------- */
+  .brand{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.5px;margin:6px 0 4px}
+  .brand span{color:var(--accent)}
+  .welcome{text-align:center;padding:26px 8px 8px}
+  .welcome .face{font-size:72px;animation:bob 1.6s ease-in-out infinite;display:inline-block}
+  .welcome h2{font-family:"Barlow Condensed",sans-serif;font-size:30px;margin:8px 0 4px}
+  .welcome p{color:var(--muted);margin:0 auto;max-width:340px;font-size:15px;line-height:1.4}
+  .connect{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;margin-top:22px;
+    padding:24px 18px;border-radius:24px;font-size:21px;font-weight:700;color:#fff;
+    background:linear-gradient(135deg,#ff4f8b,#ff8a3d);box-shadow:0 14px 36px -12px rgba(255,79,139,.75);animation:pulse 2.2s infinite}
+  .connect:active{transform:scale(.98)}
+  .connect .ico{font-size:28px}
+  @keyframes pulse{0%,100%{box-shadow:0 14px 36px -12px rgba(255,79,139,.75),0 0 0 0 rgba(255,79,139,.45)}60%{box-shadow:0 14px 36px -12px rgba(255,79,139,.75),0 0 0 14px rgba(255,79,139,0)}}
+  .linkbtn{background:none;color:var(--muted);text-decoration:underline;font-weight:500;padding:14px;width:100%}
+  .msg{margin-top:12px;padding:12px 14px;border-radius:16px;font-size:14px;line-height:1.45;background:#3a1630;border:1px solid #6a2850;color:#ffd6e6}
   .msg b{color:#fff}
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-  @media (max-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
-  .tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
-  .tile .lbl{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
-  .tile .val{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:40px;line-height:1.05;margin-top:4px;font-variant-numeric:tabular-nums}
-  .tile .val small{font-size:16px;color:var(--muted);font-weight:500;margin-left:3px}
-  .tile.big{grid-column:span 2}
-  .tile.big .val{font-size:64px}
-  .tile.kcal .val{color:var(--accent2)}
-  .tile.pw .val{color:var(--accent)}
-  .tile .sub{font-size:12px;color:var(--muted);margin-top:2px}
-  canvas{width:100%;height:90px;display:block;margin-top:10px}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:12px}
-  .tabs{display:flex;gap:6px;margin-bottom:14px;background:var(--bg);padding:4px;border-radius:10px;width:fit-content}
-  .tabs button{border:none;background:transparent;padding:8px 14px;color:var(--muted)}
-  .tabs button.act{background:var(--panel);color:var(--text)}
-  .ctrl{display:flex;align-items:center;gap:12px}
-  .ctrl .step{width:48px;height:48px;padding:0;font-size:22px;flex:none}
-  input[type=range]{flex:1;accent-color:var(--accent);height:28px}
-  .target{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:36px;min-width:110px;text-align:right;font-variant-numeric:tabular-nums}
-  .target small{font-size:16px;color:var(--muted)}
-  .presets{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
-  .presets button{padding:6px 12px;font-size:13px}
-  .hint{font-size:12px;color:var(--muted);margin-top:10px}
-  .row{display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
-  select{font:500 13px Inter,sans-serif;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
-  .log{font:12px ui-monospace,Menlo,monospace;color:var(--muted);margin-top:12px;max-height:90px;overflow:auto;white-space:pre-wrap}
-  details summary{cursor:pointer;font-size:13px;color:var(--muted)}
+  .resume{display:flex;align-items:center;gap:12px}
+  .resume .txt{flex:1;font-size:14px;line-height:1.4}
+  .resume .txt b{font-size:16px}
+  .btn{background:var(--panel2);border:1px solid var(--line);padding:11px 14px;border-radius:14px}
+  .btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  /* ---------- Barre du haut (connecté) ---------- */
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .pill{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);background:rgba(255,255,255,.05);padding:7px 12px;border-radius:99px;min-width:0}
+  .pill span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dot{width:9px;height:9px;border-radius:50%;background:#666;flex:none}
+  .dot.on{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+  .dot.demo{background:var(--accent2)}
+  .more{background:rgba(255,255,255,.08);border-radius:99px;padding:9px 16px;font-size:15px;display:flex;align-items:center;gap:6px}
+
+  /* ---------- Héros : calories, gourmandises, temps ---------- */
+  .hero{background:linear-gradient(150deg,#ff4f8b 0%,#ff7a45 55%,#ffb03d 100%);border:none;color:#fff;
+    box-shadow:0 16px 40px -16px rgba(255,79,139,.8)}
+  .hero .lbl{color:rgba(255,255,255,.85)}
+  .coachline{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;line-height:1.25;min-height:40px}
+  .coachline .face{font-size:30px;animation:bob 1.6s ease-in-out infinite;flex:none}
+  .coachline small{display:block;font-weight:500;font-size:12.5px;opacity:.92;margin-top:1px}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-4px) rotate(4deg)}}
+  .heroRow{display:flex;align-items:flex-end;justify-content:space-between;margin-top:10px}
+  .kcal{font-size:76px}
+  .kcal small,.time small{font-family:Inter,sans-serif;font-size:16px;font-weight:600;opacity:.85;margin-left:4px}
+  .time{font-size:44px;text-align:right}
+  .emo{font-size:26px;letter-spacing:3px;line-height:1.25;margin-top:8px;min-height:6px;word-break:break-all}
+  .foodTxt{font-size:13.5px;margin-top:6px;opacity:.95}
+  .bar{height:9px;border-radius:99px;background:rgba(0,0,0,.18);overflow:hidden;margin-top:6px}
+  .bar i{display:block;height:100%;border-radius:99px;background:#fff;transition:width .6s}
+
+  /* ---------- Puissance ---------- */
+  .pwRow{display:flex;justify-content:space-between;align-items:flex-end}
+  .pw{font-size:60px;color:var(--accent)}
+  .pw small,.avg small,.stat .num small{font-family:Inter,sans-serif;font-size:14px;color:var(--muted);font-weight:600;margin-left:3px}
+  .avg{font-size:36px;text-align:right}
+  canvas#chart{width:100%;height:64px;display:block;margin-top:8px}
+
+  /* ---------- Réglages ---------- */
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--bg);border-radius:14px;padding:4px;gap:4px}
+  .seg button{background:transparent;color:var(--muted);padding:10px 4px;border-radius:11px;font-size:14px}
+  .seg button.act{background:var(--panel2);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.25)}
+  .dial{display:flex;align-items:center;justify-content:space-between;margin:14px 0 6px;gap:10px}
+  .step{width:64px;height:64px;border-radius:20px;background:var(--panel2);border:1px solid var(--line);font-size:30px;flex:none;line-height:1}
+  .step:active{background:var(--accent);border-color:var(--accent)}
+  .tv{text-align:center;flex:1}
+  .tv .num{font-size:52px}
+  .tv .num small{font-family:Inter,sans-serif;font-size:18px;color:var(--muted);margin-left:2px}
+  .tv .lbl{margin-top:4px;text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:500}
+  input[type=range]{width:100%;accent-color:var(--accent);height:30px;margin:2px 0}
+  .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .chips::-webkit-scrollbar{display:none}
+  .chips button{flex:1 0 auto;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:8px 12px;font-size:13.5px}
+  .chips button.act{border-color:var(--accent);color:var(--accent)}
+
+  /* ---------- Stats ---------- */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:10px 12px}
+  .stat .num{font-size:30px;margin-top:4px}
+  .foot{font-size:12px;color:var(--muted);margin-top:10px;text-align:center;line-height:1.4}
+
+  /* ---------- Historique ---------- */
+  h3{font-family:"Barlow Condensed",sans-serif;font-size:22px;margin:22px 0 4px;text-transform:uppercase;letter-spacing:.5px}
+  .totals{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+  .totals .stat .num{font-size:26px}
+  .hitem{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px 14px;margin-top:8px}
+  .hitem .d{flex:1;min-width:0}
+  .hitem .t{font-weight:700;font-size:15px}
+  .hitem .s{font-size:13px;color:var(--muted);margin-top:3px}
+  .hitem .e{font-size:18px;letter-spacing:1px;margin-top:4px;word-break:break-all}
+  .hitem .k{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:28px;color:var(--accent2);text-align:right;line-height:1}
+  .hitem .k small{font-family:Inter;font-size:12px;color:var(--muted);display:block;font-weight:600}
+  .hitem .del{background:none;color:var(--muted);font-size:13px;padding:6px 0 0;text-decoration:underline;font-weight:500}
+  .empty{color:var(--muted);font-size:14px;text-align:center;padding:18px;border:1px dashed var(--line);border-radius:18px;margin-top:8px}
+
+  /* ---------- Feuille d'actions ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(5,3,15,.6);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:.25s;z-index:30}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .sheet{visibility:hidden;position:fixed;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;background:#1b1540;border-radius:26px 26px 0 0;
+    padding:10px 16px calc(18px + var(--sb));transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.9,.3,1),visibility .3s;z-index:31;max-height:88vh;overflow:auto}
+  .sheet.show{transform:none;visibility:visible}
+  .grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 12px}
+  .act-list button{display:flex;align-items:center;gap:14px;width:100%;background:var(--panel);border:1px solid var(--line);
+    border-radius:16px;padding:15px 16px;margin-top:8px;font-size:16px;text-align:left}
+  .act-list button .i{font-size:22px;width:28px;text-align:center}
+  .act-list button.warn{color:#ff9fbd}
+  .act-list button.confirm{background:#5a1838;border-color:var(--accent)}
+  .setting{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 16px;margin-top:8px;font-size:15px}
+  select{font:600 14px Inter,sans-serif;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
+  details{margin-top:10px}
+  details summary{cursor:pointer;font-size:13px;color:var(--muted);padding:6px 0}
+  .log{font:12px ui-monospace,Menlo,monospace;color:var(--muted);max-height:140px;overflow:auto;white-space:pre-wrap}
+
+  .toast{position:fixed;left:50%;top:calc(14px + var(--st));transform:translate(-50%,-250%);background:#fff;color:#2a1660;
+    font:700 16px Inter,sans-serif;padding:12px 20px;border-radius:99px;box-shadow:0 12px 30px rgba(0,0,0,.35);
+    transition:transform .45s cubic-bezier(.2,1.4,.4,1);z-index:40;max-width:92vw;text-align:center}
+  .toast.show{transform:translate(-50%,0)}
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:39;width:100%;height:100%}
+  .pop{animation:pop .4s}
+  @keyframes pop{50%{transform:scale(1.15)}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1>Home <span>Trainer</span></h1>
-    <div class="status"><div class="dot" id="dot"></div><span id="statusTxt">Non connecté</span></div>
-  </header>
 
-  <div class="coach"><div class="face" id="coachFace">🚴</div><div class="say" id="coachSay">Prêt·e à transpirer ?<small>Connecte ton home trainer (ou lance la démo) et c'est parti !</small></div></div>
+  <!-- ===== Écran déconnecté ===== -->
+  <section class="off-only">
+    <div class="brand">Home <span>Trainer</span></div>
+    <div class="welcome">
+      <div class="face" id="wFace">🚴</div>
+      <h2 id="wTitle">Prêt·e à transpirer ?</h2>
+      <p id="wText">Allume ton home trainer, donne quelques coups de pédale pour le réveiller, puis connecte-toi.</p>
+    </div>
+    <button class="connect" id="btnConnect"><span class="ico">⚡</span><span id="connectTxt">Se connecter</span></button>
+    <div class="msg hidden" id="msg"></div>
+    <button class="linkbtn" id="btnDemo">ou essayer le mode démo</button>
 
-  <div class="msg" id="msg"></div>
+    <div class="card resume hidden" id="resumeCard">
+      <div class="txt"><b>Séance en cours</b><br><span id="resumeTxt"></span></div>
+      <button class="btn" id="btnEndOff">Terminer</button>
+    </div>
 
-  <div class="btns" style="margin-bottom:14px">
-    <button class="primary" id="btnConnect">Connecter le home trainer</button>
-    <button id="btnDisconnect" disabled>Déconnecter</button>
-    <button id="btnDemo">Mode démo</button>
-    <button id="btnReset">Remettre à zéro</button>
-  </div>
+    <h3>Mes séances</h3>
+    <div id="histOff"></div>
+  </section>
 
-  <div class="grid">
-    <div class="tile big pw">
-      <div class="lbl">Puissance</div>
-      <div class="val"><span id="vPower">–</span><small>W</small></div>
+  <!-- ===== Écran connecté ===== -->
+  <section class="live-only">
+    <div class="top">
+      <div class="pill"><div class="dot" id="dot"></div><span id="statusTxt">Connecté</span></div>
+      <button class="more" id="btnMore">Actions <span style="font-size:20px;line-height:0">⋯</span></button>
+    </div>
+
+    <div class="card hero">
+      <div class="coachline"><span class="face" id="coachFace">🔥</span><div id="coachSay">C'est parti !</div></div>
+      <div class="heroRow">
+        <div><div class="lbl">Calories brûlées</div><div class="num kcal"><span id="vKcal">0</span><small>kcal</small></div></div>
+        <div><div class="lbl" style="text-align:right">Temps</div><div class="num time" id="vTime">0:00</div></div>
+      </div>
+      <div class="emo" id="foodEmo"></div>
+      <div class="foodTxt" id="foodTxt"></div>
+      <div class="bar"><i id="foodBar" style="width:0%"></i></div>
+    </div>
+
+    <div class="card">
+      <div class="pwRow">
+        <div><div class="lbl">Puissance</div><div class="num pw"><span id="vPower">0</span><small>W</small></div></div>
+        <div><div class="lbl" style="text-align:right">Moyenne</div><div class="num avg"><span id="vAvgP">0</span><small>W</small></div></div>
+      </div>
       <canvas id="chart"></canvas>
     </div>
-    <div class="tile big kcal">
-      <div class="lbl">Calories brûlées (estim.)</div>
-      <div class="val"><span id="vKcal">0</span><small>kcal</small></div>
-      <div class="sub"><span id="vKj">0</span> kJ de travail mécanique · <span id="vRate">0</span> kcal/h actuellement</div>
-      <div class="sub" id="vTrainerKcal"></div>
-      <div class="food"><span id="foodTxt">Prochain objectif : 🍬 un bonbon</span>
-        <div class="bar"><i id="foodBar" style="width:0%"></i></div>
-        <div class="emo" id="foodEmo"></div></div>
-    </div>
-    <div class="tile"><div class="lbl">Durée</div><div class="val" id="vTime">0:00</div></div>
-    <div class="tile"><div class="lbl">Cadence</div><div class="val"><span id="vCad">–</span><small>rpm</small></div></div>
-    <div class="tile"><div class="lbl">Vitesse</div><div class="val"><span id="vSpeed">–</span><small>km/h</small></div></div>
-    <div class="tile"><div class="lbl">Distance</div><div class="val"><span id="vDist">0.00</span><small>km</small></div></div>
-    <div class="tile"><div class="lbl">Puiss. moy.</div><div class="val"><span id="vAvgP">0</span><small>W</small></div></div>
-    <div class="tile"><div class="lbl">Puiss. max</div><div class="val"><span id="vMaxP">0</span><small>W</small></div></div>
-    <div class="tile"><div class="lbl">Cadence moy.</div><div class="val"><span id="vAvgC">0</span><small>rpm</small></div></div>
-    <div class="tile"><div class="lbl">Fréq. cardiaque</div><div class="val"><span id="vHr">–</span><small>bpm</small></div></div>
-  </div>
 
-  <div class="panel">
-    <div class="tabs" id="tabs">
-      <button data-mode="res" class="act">Résistance</button>
-      <button data-mode="erg">Puissance cible (ERG)</button>
-      <button data-mode="sim">Pente</button>
+    <div class="card">
+      <div class="seg" id="seg">
+        <button data-mode="res" class="act">Résistance</button>
+        <button data-mode="erg">Watts (ERG)</button>
+        <button data-mode="sim">Pente</button>
+      </div>
+      <div class="dial">
+        <button class="step" id="minus" aria-label="Moins">−</button>
+        <div class="tv"><div class="num" id="targetTxt">30</div><div class="lbl" id="modeHint"></div></div>
+        <button class="step" id="plus" aria-label="Plus">+</button>
+      </div>
+      <input type="range" id="slider" aria-label="Réglage">
+      <div class="chips" id="presets"></div>
     </div>
-    <div class="ctrl">
-      <button class="step" id="minus">−</button>
-      <input type="range" id="slider">
-      <button class="step" id="plus">+</button>
-      <div class="target" id="targetTxt"></div>
-    </div>
-    <div class="presets" id="presets"></div>
-    <div class="hint" id="modeHint"></div>
-  </div>
 
-  <div class="panel">
-    <div class="row">
-      <label>Rendement musculaire&nbsp;
-        <select id="eff">
-          <option value="0.20">20 % (débutant)</option>
-          <option value="0.22">22 %</option>
-          <option value="0.24" selected>24 % (moyen)</option>
-          <option value="0.25">25 % (entraîné)</option>
-        </select>
-      </label>
+    <div class="stats">
+      <div class="stat"><div class="lbl">Cadence</div><div class="num"><span id="vCad">0</span><small>rpm</small></div></div>
+      <div class="stat"><div class="lbl">Vitesse</div><div class="num"><span id="vSpeed">0</span><small>km/h</small></div></div>
+      <div class="stat"><div class="lbl">Distance</div><div class="num"><span id="vDist">0</span><small>km</small></div></div>
+      <div class="stat"><div class="lbl">Puiss. max</div><div class="num"><span id="vMaxP">0</span><small>W</small></div></div>
+      <div class="stat"><div class="lbl">Cad. moy.</div><div class="num"><span id="vAvgC">0</span><small>rpm</small></div></div>
+      <div class="stat"><div class="lbl">Cardio</div><div class="num"><span id="vHr">–</span><small>bpm</small></div></div>
     </div>
-    <div class="hint">Calcul : énergie mécanique (puissance × temps) ÷ rendement du corps humain. Avec ~24 % de rendement, 1 kJ pédalé ≈ 1 kcal brûlée. C'est la méthode la plus fiable sans capteur cardio, à ±10 % près.</div>
-    <details style="margin-top:10px"><summary>Journal technique</summary><div class="log" id="log"></div></details>
-  </div>
+    <div class="foot"><span id="vRate">0</span> kcal/h en ce moment · <span id="vKj">0</span> kJ de travail<span id="vTrainerKcal"></span><br>Séance sauvegardée automatiquement sur cet appareil.</div>
+  </section>
 </div>
+
+<!-- ===== Feuilles ===== -->
+<div class="scrim" id="scrim"></div>
+
+<div class="sheet" id="sheetActions">
+  <div class="grab"></div>
+  <div class="act-list">
+    <button id="aEnd"><span class="i">🏁</span>Terminer et enregistrer la séance</button>
+    <button id="aHist"><span class="i">📜</span>Mes séances</button>
+    <button id="aReset" class="warn"><span class="i">🔁</span><span id="aResetTxt">Recommencer à zéro (sans enregistrer)</span></button>
+    <button id="aDisc"><span class="i">🔌</span><span id="aDiscTxt">Déconnecter</span></button>
+  </div>
+  <div class="setting">
+    <span>Rendement musculaire</span>
+    <select id="eff">
+      <option value="0.20">20 % débutant</option>
+      <option value="0.22">22 %</option>
+      <option value="0.24" selected>24 % moyen</option>
+      <option value="0.25">25 % entraîné</option>
+    </select>
+  </div>
+  <div class="hint">Calories = travail mécanique (puissance × temps) ÷ rendement du corps. À 24 %, 1 kJ pédalé ≈ 1 kcal brûlée (±10 %).</div>
+  <details><summary>Journal technique</summary><div class="log" id="log"></div></details>
+</div>
+
+<div class="sheet" id="sheetHist">
+  <div class="grab"></div>
+  <h3 style="margin-top:0">Mes séances</h3>
+  <div id="histOn"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 <canvas id="confetti"></canvas>
 
 <script>
 (() => {
   const $ = id => document.getElementById(id);
-  const uuid = n => n; // numbers accepted by Web Bluetooth
-  const FTMS = 0x1826, BIKE_DATA = 0x2AD2, CP = 0x2AD9, RES_RANGE = 0x2AD6, PWR_RANGE = 0x2AD8, STATUS = 0x2ADA;
+  const FTMS = 0x1826, BIKE_DATA = 0x2AD2, CP = 0x2AD9, RES_RANGE = 0x2AD6, PWR_RANGE = 0x2AD8;
 
-  let device = null, cpChar = null, writeQ = Promise.resolve();
-  let resRange = {min:0, max:100, inc:1};
-  let pwrRange = {min:0, max:1500, inc:5};
-  let demoTimer = null;
+  // ---------- Stockage local ----------
+  const K_CUR = 'ht.current', K_HIST = 'ht.history', K_SET = 'ht.settings';
+  const store = {
+    get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+    set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+    del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+  };
 
+  let device = null, cpChar = null, writeQ = Promise.resolve(), demoTimer = null, wakeLock = null;
+  let resRange = {min:0, max:100}, lastTick = null;
   const live = {power:0, cadence:0, speed:0, hr:null, trainerKcal:null};
-  const sess = {elapsed:0, kJ:0, dist:0, maxP:0, cadSum:0, cadN:0, last:null};
   const hist = [];
 
-  // ---------- UI helpers ----------
-  function log(t){ const l=$('log'); l.textContent = (new Date().toLocaleTimeString()+'  '+t+'\n'+l.textContent).slice(0,4000); }
-  function setStatus(txt, cls){ $('statusTxt').textContent = txt; $('dot').className = 'dot '+(cls||''); }
-  function showMsg(html){ const m=$('msg'); if(!html){m.classList.remove('show');return;} m.innerHTML=html; m.classList.add('show'); }
+  const settings = Object.assign({mode:'res', vals:{res:30, erg:150, sim:2}, eff:0.24}, store.get(K_SET, {}));
+  $('eff').value = String(settings.eff);
+  const saveSettings = () => store.set(K_SET, settings);
+
+  function blankSession(){ return {id:Date.now().toString(36), start:Date.now(), updated:Date.now(), elapsed:0, kJ:0, dist:0, maxP:0, cadSum:0, cadN:0}; }
+  let sess = store.get(K_CUR, null);
+  if (!sess || Date.now() - sess.updated > 6*3600e3) sess = blankSession();   // une séance non touchée depuis 6 h est considérée finie
+
+  const kcalPerKj = () => 1/(4.184*settings.eff);
+  const kcalOf = s => Math.round(s.kJ*kcalPerKj());
+
+  // ---------- Petits utilitaires d'interface ----------
+  function log(t){ const l=$('log'); l.textContent = (new Date().toLocaleTimeString()+'  '+t+'\n'+l.textContent).slice(0,5000); }
+  function showMsg(html){ const m=$('msg'); m.classList.toggle('hidden', !html); m.innerHTML = html || ''; }
+  let toastT = null;
+  function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),2800); }
+  function pop(id){ const el=$(id); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+  function fmtTime(s){ s=Math.floor(s); const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60;
+    return (h ? h+':'+String(m).padStart(2,'0') : m)+':'+String(x).padStart(2,'0'); }
+  function fmtDur(s){ const m=Math.round(s/60); return m<60 ? m+' min' : Math.floor(m/60)+' h '+String(m%60).padStart(2,'0'); }
+  const isLive = () => !!demoTimer || !!(device && device.gatt && device.gatt.connected);
+
+  function setView(){
+    document.body.classList.toggle('live', isLive());
+    $('aDiscTxt').textContent = demoTimer ? 'Arrêter la démo' : 'Déconnecter';
+    renderOff();
+  }
+
+  // ---------- Feuilles (actions / historique) ----------
+  function openSheet(id){ closeSheets(); $('scrim').classList.add('show'); $(id).classList.add('show'); }
+  function closeSheets(){ $('scrim').classList.remove('show'); document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show')); disarmReset(); }
+  $('scrim').onclick = closeSheets;
+  $('btnMore').onclick = () => openSheet('sheetActions');
+  $('aHist').onclick = () => { renderHistory(); openSheet('sheetHist'); };
 
   // ---------- Bluetooth ----------
-  function btSupportProblem(){
-    if (!('bluetooth' in navigator)) {
-      return "<b>Bluetooth indisponible dans ce navigateur.</b> Le Web Bluetooth fonctionne avec <b>Chrome ou Edge</b> sur ordinateur (Windows, Mac, Linux) et sur Android. Safari et iPhone/iPad ne le prennent pas en charge (sur iOS, l'app gratuite <b>Bluefy</b> le permet).";
-    }
+  function btProblem(){
+    if (!('bluetooth' in navigator))
+      return "<b>Bluetooth indisponible dans ce navigateur.</b> Utilise <b>Chrome ou Edge</b> (ordinateur ou Android). Sur iPhone/iPad, ouvre cette page dans l'app gratuite <b>Bluefy</b>.";
     return null;
   }
 
   async function connect(){
-    const pb = btSupportProblem();
-    if (pb) { showMsg(pb); return; }
-    showMsg(null);
-    stopDemo();
+    const pb = btProblem(); if (pb){ showMsg(pb); return; }
+    showMsg(null); stopDemo(false);
+    $('connectTxt').textContent = 'Recherche…';
     try{
-      setStatus('Recherche…','busy');
-      device = await navigator.bluetooth.requestDevice({
-        filters:[{services:[FTMS]}],
-        optionalServices:[FTMS]
-      });
+      device = await navigator.bluetooth.requestDevice({filters:[{services:[FTMS]}], optionalServices:[FTMS]});
       device.addEventListener('gattserverdisconnected', onDisconnected);
-      setStatus('Connexion à '+(device.name||'appareil')+'…','busy');
+      $('connectTxt').textContent = 'Connexion à '+(device.name||'l\'appareil')+'…';
       const server = await device.gatt.connect();
       const svc = await server.getPrimaryService(FTMS);
-
       try{
         const v = await (await svc.getCharacteristic(RES_RANGE)).readValue();
-        resRange = {min:v.getInt16(0,true), max:v.getInt16(2,true), inc:Math.max(1,v.getUint16(4,true))};
-        log(`Plage de résistance : ${resRange.min/10} → ${resRange.max/10} (pas ${resRange.inc/10})`);
+        resRange = {min:v.getInt16(0,true), max:v.getInt16(2,true)};
+        log(`Plage de résistance : ${resRange.min/10} → ${resRange.max/10}`);
       }catch(e){ log('Plage de résistance non publiée, 0–100 par défaut'); }
-      try{
-        const v = await (await svc.getCharacteristic(PWR_RANGE)).readValue();
-        pwrRange = {min:v.getInt16(0,true), max:v.getInt16(2,true), inc:Math.max(1,v.getUint16(4,true))};
-        log(`Plage de puissance : ${pwrRange.min} → ${pwrRange.max} W`);
-      }catch(e){}
+      try{ const v = await (await svc.getCharacteristic(PWR_RANGE)).readValue(); log(`Plage de puissance : ${v.getInt16(0,true)} → ${v.getInt16(2,true)} W`); }catch(e){}
 
       const data = await svc.getCharacteristic(BIKE_DATA);
       data.addEventListener('characteristicvaluechanged', e => parseBikeData(e.target.value));
@@ -221,57 +343,50 @@
         cpChar = await svc.getCharacteristic(CP);
         cpChar.addEventListener('characteristicvaluechanged', e => onCpResponse(e.target.value));
         await cpChar.startNotifications();
-        await cpWrite([0x00]);          // Request Control
-        await cpWrite([0x07]);          // Start / Resume
-      }catch(e){ cpChar=null; log('Point de contrôle indisponible : '+e.message); showMsg("Connecté en lecture seule : ce home trainer n'accepte pas le pilotage de la résistance (ou une autre appli, comme Zwift, en a déjà le contrôle)."); }
+        await cpWrite([0x00]);   // prise de contrôle
+        await cpWrite([0x07]);   // démarrage
+      }catch(e){ cpChar = null; log('Point de contrôle indisponible : '+e.message); toast("Lecture seule : réglages indisponibles"); }
 
-      setStatus('Connecté · '+(device.name||'home trainer'),'on');
-      $('btnConnect').disabled = true; $('btnDisconnect').disabled = false;
-      applyMode(true);
+      $('statusTxt').textContent = device.name || 'Home trainer'; $('dot').className = 'dot on';
+      setView(); applyMode(true); keepAwake();
+      coach('🔥', 'Connecté ! C\'est parti', sess.elapsed ? 'On reprend la séance là où tu l\'avais laissée.' : 'Commence tranquille pour t\'échauffer.');
     }catch(e){
-      setStatus('Non connecté','');
-      if (e.name === 'NotFoundError' && /cancel/i.test(e.message)) return;
-      if (e.name === 'SecurityError' || /permissions policy|disallowed|not allowed/i.test(e.message)) {
-        showMsg("<b>Le Bluetooth est bloqué dans cette fenêtre intégrée.</b> Ouvre le fichier <b>home-trainer.html</b> (envoyé dans la conversation) directement dans Chrome ou Edge : le bouton de connexion y fonctionnera. Le mode démo marche ici.");
-      } else if (e.name === 'NotFoundError') {
-        showMsg("Aucun home trainer compatible trouvé. Vérifie qu'il est allumé, que tu pédales un peu pour le réveiller, et qu'aucune autre appli (Zwift, app du fabricant…) n'y est connectée. Le home trainer doit gérer le protocole Bluetooth <b>FTMS</b> (Wahoo Kickr, Tacx, Elite, Zwift Hub, Saris, JetBlack…).");
-      } else {
-        showMsg('Erreur de connexion : '+e.message);
-      }
       log(e.name+': '+e.message);
-    }
+      if (e.name === 'NotFoundError' && /cancel/i.test(e.message)) {}
+      else if (e.name === 'SecurityError' || /permissions policy|disallowed/i.test(e.message))
+        showMsg("<b>Le Bluetooth est bloqué dans cette fenêtre.</b> Ouvre la page directement dans Chrome ou Edge (pas dans un aperçu intégré).");
+      else if (e.name === 'NotFoundError')
+        showMsg("Aucun home trainer trouvé. Vérifie qu'il est allumé, pédale un peu pour le réveiller, et ferme Zwift ou l'app du fabricant. Il doit gérer le Bluetooth <b>FTMS</b>.");
+      else showMsg('Erreur de connexion : '+e.message);
+    }finally{ renderOff(); }
   }
 
   function onDisconnected(){
-    setStatus('Déconnecté','');
-    cpChar = null;
-    $('btnConnect').disabled = false; $('btnDisconnect').disabled = true;
-    live.power = live.cadence = live.speed = 0;
-    log('Home trainer déconnecté');
+    cpChar = null; live.power = live.cadence = live.speed = 0; live.hr = null;
+    saveCurrent(); log('Home trainer déconnecté'); setView();
+    if (sess.elapsed > 0) toast('🔌 Déconnecté — ta séance est gardée');
   }
-  function disconnect(){ if (device && device.gatt.connected) device.gatt.disconnect(); }
+  function disconnect(){ if (demoTimer) stopDemo(true); else if (device && device.gatt.connected) device.gatt.disconnect(); closeSheets(); }
 
   function cpWrite(bytes){
     writeQ = writeQ.then(async () => {
       if (!cpChar) return;
       const buf = new Uint8Array(bytes);
-      if (cpChar.writeValueWithResponse) await cpChar.writeValueWithResponse(buf);
-      else await cpChar.writeValue(buf);
+      if (cpChar.writeValueWithResponse) await cpChar.writeValueWithResponse(buf); else await cpChar.writeValue(buf);
     }).catch(e => log('Écriture refusée : '+e.message));
     return writeQ;
   }
-
-  const OPS = {0x00:'Prise de contrôle',0x04:'Résistance',0x05:'Puissance cible',0x07:'Démarrage',0x11:'Simulation pente'};
-  const RES = {1:'OK',2:'non supporté',3:'paramètre invalide',4:'échec',5:'contrôle non autorisé'};
+  const OPS = {0x00:'Prise de contrôle',0x04:'Résistance',0x05:'Puissance cible',0x07:'Démarrage',0x11:'Pente'};
+  const RES = {1:'OK',2:'non supporté',3:'paramètre invalide',4:'échec',5:'contrôle refusé'};
   function onCpResponse(v){
     if (v.getUint8(0) !== 0x80) return;
     const op = v.getUint8(1), r = v.getUint8(2);
     log(`${OPS[op]||('op 0x'+op.toString(16))} → ${RES[r]||r}`);
-    if (r === 5) showMsg("Le home trainer refuse le contrôle : une autre appli le pilote peut-être déjà. Ferme-la puis reconnecte-toi.");
-    if (r === 2 && op === 0x04) showMsg("Ce home trainer ne gère pas le réglage direct de la résistance. Essaie l'onglet <b>Pente</b> ou <b>Puissance cible</b>.");
+    if (r === 5) toast('Une autre appli contrôle déjà le home trainer');
+    if (r === 2 && op === 0x04) toast('Résistance directe non gérée : essaie Pente ou Watts');
   }
 
-  // FTMS Indoor Bike Data parser
+  // Indoor Bike Data (FTMS)
   function parseBikeData(v){
     const f = v.getUint16(0,true); let o = 2;
     if (!(f & 0x0001)) { live.speed = v.getUint16(o,true)/100; o+=2; }
@@ -283,137 +398,224 @@
     if (f & 0x0040) { live.power = Math.max(0, v.getInt16(o,true)); o+=2; }
     if (f & 0x0080) o+=2;
     if (f & 0x0100) { const k=v.getUint16(o,true); if (k!==0xFFFF) live.trainerKcal=k; o+=5; }
-    if (f & 0x0200) { const h=v.getUint8(o); live.hr = h||null; o+=1; }
+    if (f & 0x0200) { live.hr = v.getUint8(o) || null; o+=1; }
   }
 
-  // ---------- Control modes ----------
-  let mode = 'res';
-  const modes = {
-    res:{min:0,max:100,step:1,val:30,unit:'%',presets:[10,25,40,60,80],
-         hint:"Résistance fixe : plus tu pédales vite, plus la puissance monte.",
-         send(v){
-           const raw = Math.round(resRange.min + (v/100)*(resRange.max-resRange.min));
-           if (raw >= 0 && raw <= 255) cpWrite([0x04, raw]);
-           else cpWrite([0x04, raw & 0xFF, (raw>>8) & 0xFF]);
-         }},
-    erg:{min:50,max:500,step:5,val:150,unit:'W',presets:[100,150,200,250,300],
-         hint:"Mode ERG : le home trainer ajuste la résistance pour maintenir cette puissance, quelle que soit ta cadence.",
-         send(v){ const w=Math.round(v); cpWrite([0x05, w & 0xFF, (w>>8) & 0xFF]); }},
-    sim:{min:-5,max:15,step:0.5,val:2,unit:'%',presets:[0,2,5,8,12],
-         hint:"Simulation de pente : la résistance dépend de la pente et de ta vitesse, comme sur la route.",
-         send(v){ const g=Math.round(v*100); cpWrite([0x11, 0,0, g & 0xFF, (g>>8) & 0xFF, 40, 51]); }}
-  };
+  // Écran allumé pendant la séance
+  async function keepAwake(){ try{ if ('wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release',()=>wakeLock=null); } }catch(e){} }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState==='visible' && isLive()) keepAwake(); else if (document.visibilityState==='hidden' && sess.elapsed > 0) saveCurrent(); });
+  window.addEventListener('pagehide', () => { if (sess.elapsed > 0) saveCurrent(); });
 
+  // ---------- Réglages ----------
+  const modes = {
+    res:{min:0,max:100,step:1,unit:'%',presets:[10,25,40,60,80],hint:'résistance fixe',
+      send(v){ const raw = Math.round(resRange.min + (v/100)*(resRange.max-resRange.min));
+        if (raw>=0 && raw<=255) cpWrite([0x04, raw]); else cpWrite([0x04, raw&0xFF, (raw>>8)&0xFF]); }},
+    erg:{min:50,max:500,step:5,big:10,unit:'W',presets:[100,150,200,250,300],hint:'puissance tenue quelle que soit la cadence',
+      send(v){ const w=Math.round(v); cpWrite([0x05, w&0xFF, (w>>8)&0xFF]); }},
+    sim:{min:-5,max:15,step:0.5,unit:'%',presets:[0,2,5,8,12],hint:'pente simulée, comme sur la route',
+      send(v){ const g=Math.round(v*100); cpWrite([0x11, 0,0, g&0xFF, (g>>8)&0xFF, 40, 51]); }}
+  };
   let sendT = null;
-  function render(){
-    const m = modes[mode];
-    $('targetTxt').innerHTML = (mode==='sim' && m.val>0?'+':'') + m.val + '<small> '+m.unit+'</small>';
+  function renderTarget(){
+    const m = modes[settings.mode], v = settings.vals[settings.mode];
+    $('targetTxt').innerHTML = (settings.mode==='sim' && v>0 ? '+' : '') + String(v).replace('.',',') + '<small>'+m.unit+'</small>';
+    document.querySelectorAll('#presets button').forEach(b => b.classList.toggle('act', +b.dataset.v === v));
   }
   function applyMode(sendNow){
-    const m = modes[mode], s = $('slider');
-    s.min=m.min; s.max=m.max; s.step=m.step; s.value=m.val;
+    const m = modes[settings.mode], s = $('slider');
+    document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('act', b.dataset.mode===settings.mode));
+    s.min=m.min; s.max=m.max; s.step=m.step; s.value=settings.vals[settings.mode];
     $('modeHint').textContent = m.hint;
-    $('presets').innerHTML = m.presets.map(p=>`<button data-v="${p}">${p} ${m.unit}</button>`).join('');
-    render();
-    if (sendNow) m.send(m.val);
+    $('presets').innerHTML = m.presets.map(p=>`<button data-v="${p}">${settings.mode==='sim'&&p>0?'+':''}${p} ${m.unit}</button>`).join('');
+    renderTarget();
+    if (sendNow) m.send(settings.vals[settings.mode]);
   }
   function setVal(v, immediate){
-    const m = modes[mode];
+    const m = modes[settings.mode];
     v = Math.min(m.max, Math.max(m.min, Math.round(v/m.step)*m.step));
-    m.val = +v.toFixed(1); $('slider').value = m.val; render();
-    clearTimeout(sendT);
-    sendT = setTimeout(()=>m.send(m.val), immediate?0:200);
+    settings.vals[settings.mode] = +v.toFixed(1); $('slider').value = settings.vals[settings.mode];
+    renderTarget(); saveSettings();
+    clearTimeout(sendT); sendT = setTimeout(() => m.send(settings.vals[settings.mode]), immediate ? 0 : 200);
   }
-
-  $('tabs').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('act', x===b));
-    mode = b.dataset.mode; applyMode(true);
-  });
-  $('slider').addEventListener('input', e => setVal(+e.target.value));
-  $('minus').onclick = () => setVal(modes[mode].val - modes[mode].step*(mode==='erg'?2:1), true);
-  $('plus').onclick  = () => setVal(modes[mode].val + modes[mode].step*(mode==='erg'?2:1), true);
-  $('presets').addEventListener('click', e => { const b=e.target.closest('button'); if (b) setVal(+b.dataset.v, true); });
+  $('seg').onclick = e => { const b=e.target.closest('button'); if (!b) return; settings.mode=b.dataset.mode; saveSettings(); applyMode(true); };
+  $('slider').oninput = e => setVal(+e.target.value);
+  const bump = d => { const m=modes[settings.mode]; setVal(settings.vals[settings.mode] + d*(m.big||m.step), true); if (navigator.vibrate) try{navigator.vibrate(8)}catch(e){} };
+  $('minus').onclick = () => bump(-1);
+  $('plus').onclick = () => bump(1);
+  $('presets').onclick = e => { const b=e.target.closest('button'); if (b) setVal(+b.dataset.v, true); };
   document.addEventListener('keydown', e => {
-    if (e.target.tagName==='SELECT') return;
-    if (e.key==='ArrowUp'){ e.preventDefault(); $('plus').click(); }
-    if (e.key==='ArrowDown'){ e.preventDefault(); $('minus').click(); }
+    if (!isLive() || e.target.tagName==='SELECT') return;
+    if (e.key==='ArrowUp'){ e.preventDefault(); bump(1); }
+    if (e.key==='ArrowDown'){ e.preventDefault(); bump(-1); }
   });
 
-  // ---------- Demo ----------
+  // ---------- Démo ----------
   function startDemo(){
-    showMsg(null); stopDemo();
-    setStatus('Mode démo (simulation)','busy');
-    let t = 0;
-    demoTimer = setInterval(()=>{
-      t++;
-      const m = modes[mode];
-      let target;
+    showMsg(null); let t = 0;
+    demoTimer = setInterval(() => {
+      t++; const v = settings.vals[settings.mode]; let target;
       live.cadence = 85 + Math.sin(t/7)*6 + (Math.random()-.5)*3;
-      if (mode==='erg') target = m.val;
-      else if (mode==='res') target = (40 + m.val*3.2) * (live.cadence/90);
-      else target = 120 + m.val*22;
+      if (settings.mode==='erg') target = v;
+      else if (settings.mode==='res') target = (40 + v*3.2) * (live.cadence/90);
+      else target = 120 + v*22;
       live.power = Math.max(0, target + (Math.random()-.5)*14);
-      live.speed = 18 + Math.cbrt(live.power)*1.9 - (mode==='sim'?m.val*0.9:0);
+      live.speed = Math.max(5, 18 + Math.cbrt(live.power)*1.9 - (settings.mode==='sim' ? v*0.9 : 0));
       live.hr = Math.round(95 + live.power*0.28);
     }, 500);
-    $('btnDemo').textContent = 'Arrêter la démo';
+    $('statusTxt').textContent = 'Mode démo'; $('dot').className = 'dot demo';
+    setView(); applyMode(false);
+    coach('🎮','Mode démo','Les chiffres sont simulés, mais la séance est enregistrée comme une vraie.');
   }
-  function stopDemo(){
+  function stopDemo(notify){
     if (!demoTimer) return;
-    clearInterval(demoTimer); demoTimer=null;
-    live.power=live.cadence=live.speed=0; live.hr=null;
-    setStatus('Non connecté','');
-    $('btnDemo').textContent = 'Mode démo';
+    clearInterval(demoTimer); demoTimer = null;
+    live.power = live.cadence = live.speed = 0; live.hr = null;
+    saveCurrent(); setView();
+    if (notify && sess.elapsed > 0) toast('Démo arrêtée — séance gardée');
   }
 
-  // ---------- Session & calories ----------
-  function reset(){
-    Object.assign(sess,{elapsed:0,kJ:0,dist:0,maxP:0,cadSum:0,cadN:0,last:null});
-    hist.length = 0; live.trainerKcal = null; Object.assign(fun,{lastKcalStep:0,lastMin:0,lastFood:-1,prevMax:0}); coach('🚴','Nouvelle séance !','Compteurs à zéro, à toi de jouer.'); updateUI();
+  // ---------- Séance & historique ----------
+  function summary(s){
+    const kcal = kcalOf(s); let reached = -1; FOODS.forEach((f,i)=>{ if (kcal>=f.k) reached=i; });
+    return {id:s.id, start:s.start, end:s.updated, elapsed:Math.round(s.elapsed), kcal, kJ:Math.round(s.kJ), dist:+s.dist.toFixed(2),
+      avgP: s.elapsed ? Math.round(s.kJ*1000/s.elapsed) : 0, maxP:Math.round(s.maxP), avgCad: s.cadN ? Math.round(s.cadSum/s.cadN) : 0,
+      foods: FOODS.slice(0,reached+1).map(f=>f.e).join('')};
+  }
+  function getHistory(){ const h = store.get(K_HIST, []); return Array.isArray(h) ? h : []; }
+  function upsertHistory(){
+    const h = getHistory().filter(x => x.id !== sess.id);
+    h.unshift(summary(sess)); h.sort((a,b)=>b.start-a.start);
+    store.set(K_HIST, h.slice(0,500));
+  }
+  function removeFromHistory(id){ store.set(K_HIST, getHistory().filter(x => x.id !== id)); }
+  let lastSave = 0;
+  function saveCurrent(){
+    sess.updated = Date.now(); store.set(K_CUR, sess);
+    if (sess.elapsed >= 60) upsertHistory();      // une séance d'au moins 1 min apparaît dans l'historique
+    lastSave = Date.now();
+  }
+  function newSession(){
+    sess = blankSession(); hist.length = 0; live.trainerKcal = null;
+    syncFun(); store.set(K_CUR, sess); updateUI(); renderOff();
+  }
+  function endSession(){
+    closeSheets();
+    if (sess.elapsed < 60){ toast('Séance trop courte (< 1 min), non enregistrée'); newSession(); return; }
+    saveCurrent();
+    const s = summary(sess);
+    toast(`🏆 Séance enregistrée : ${s.kcal} kcal en ${fmtDur(s.elapsed)} !`); confetti(160);
+    newSession();
+    if (isLive()) coach('🏁','Nouvelle séance prête','Les compteurs sont à zéro. Encore un tour ?');
+  }
+  // « Recommencer » demande une 2e pression pour confirmer
+  let resetArmed = false;
+  function disarmReset(){ resetArmed=false; $('aReset').classList.remove('confirm'); $('aResetTxt').textContent='Recommencer à zéro (sans enregistrer)'; }
+  $('aReset').onclick = () => {
+    if (!resetArmed){ resetArmed=true; $('aReset').classList.add('confirm'); $('aResetTxt').textContent='Touche encore pour effacer cette séance'; return; }
+    removeFromHistory(sess.id); closeSheets(); newSession(); toast('Compteurs remis à zéro');
+  };
+  $('aEnd').onclick = endSession;
+  $('btnEndOff').onclick = endSession;
+  $('aDisc').onclick = disconnect;
+  $('eff').onchange = e => { settings.eff = +e.target.value; saveSettings(); syncFun(); updateUI(); if (sess.elapsed>=60) upsertHistory(); };
+
+  function renderHistory(){
+    const h = getHistory();
+    let html = '';
+    if (!h.length) html = '<div class="empty">Pas encore de séance enregistrée.<br>Ta première t\'attend ! 🚀</div>';
+    else {
+      const weekAgo = Date.now() - 7*864e5;
+      const wk = h.filter(x => x.start >= weekAgo);
+      const sum = (a,k) => a.reduce((t,x)=>t+(x[k]||0),0);
+      html += `<div class="totals">
+        <div class="stat"><div class="lbl">7 jours</div><div class="num">${wk.length}<small>séance${wk.length>1?'s':''}</small></div></div>
+        <div class="stat"><div class="lbl">kcal 7 j</div><div class="num" style="color:var(--accent2)">${sum(wk,'kcal')}</div></div>
+        <div class="stat"><div class="lbl">Temps 7 j</div><div class="num" style="font-size:22px">${fmtDur(sum(wk,'elapsed'))}</div></div>
+      </div>
+      <div class="foot" style="margin-top:6px">Depuis le début : ${h.length} séance${h.length>1?'s':''} · ${sum(h,'kcal')} kcal · ${fmtDur(sum(h,'elapsed'))} · ${sum(h,'dist').toFixed(1).replace('.',',')} km</div>`;
+      html += h.slice(0,60).map(x => {
+        const d = new Date(x.start);
+        const day = d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+        const hr = d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+        const cur = x.id === sess.id ? ' · <span style="color:var(--ok)">en cours</span>' : '';
+        return `<div class="hitem"><div class="d">
+            <div class="t">${day} · ${hr}${cur}</div>
+            <div class="s">${fmtDur(x.elapsed)} · ${x.avgP} W moy. · ${String(x.dist).replace('.',',')} km${x.avgCad?` · ${x.avgCad} rpm`:''}</div>
+            ${x.foods?`<div class="e">${x.foods}</div>`:''}
+            <button class="del" data-del="${x.id}">Supprimer</button>
+          </div><div class="k">${x.kcal}<small>kcal</small></div></div>`;
+      }).join('');
+    }
+    $('histOff').innerHTML = html; $('histOn').innerHTML = html;
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-del]'); if (!b) return;
+    if (b.dataset.armed){ removeFromHistory(b.dataset.del); if (b.dataset.del===sess.id) newSession(); renderHistory(); }
+    else { b.dataset.armed = 1; b.textContent = 'Confirmer la suppression'; b.style.color = 'var(--accent)'; }
+  });
+
+  function renderOff(){
+    if (isLive()) return;
+    const has = sess.elapsed > 0;
+    $('resumeCard').classList.toggle('hidden', !has);
+    if (has) $('resumeTxt').textContent = `${fmtTime(sess.elapsed)} · ${kcalOf(sess)} kcal ${summary(sess).foods} — reconnecte-toi pour continuer`;
+    $('connectTxt').textContent = has ? 'Reprendre ma séance' : 'Se connecter';
+    const n = getHistory().length;
+    if (has){ $('wFace').textContent='💪'; $('wTitle').textContent='On continue ?'; $('wText').textContent='Ta séance est gardée au chaud. Reconnecte ton home trainer pour reprendre.'; }
+    else if (n){ $('wFace').textContent='🚴'; $('wTitle').textContent='Content de te revoir !'; $('wText').textContent=`Déjà ${n} séance${n>1?'s':''} au compteur. On en ajoute une ?`; }
+    renderHistory();
   }
 
+  // ---------- Boucle principale ----------
   function tick(){
     const now = performance.now();
-    const dt = sess.last ? Math.min(3,(now-sess.last)/1000) : 0;
-    sess.last = now;
-    const active = live.power > 0 || live.cadence > 0;
+    const dt = lastTick ? Math.min(3,(now-lastTick)/1000) : 0; lastTick = now;
+    const active = isLive() && (live.power > 0 || live.cadence > 0);
     if (active && dt > 0){
-      sess.elapsed += dt;
-      sess.kJ += live.power*dt/1000;
-      sess.dist += live.speed*dt/3600;
+      sess.elapsed += dt; sess.kJ += live.power*dt/1000; sess.dist += live.speed*dt/3600;
       sess.maxP = Math.max(sess.maxP, live.power);
-      if (live.cadence>0){ sess.cadSum += live.cadence*dt; sess.cadN += dt; }
+      if (live.cadence > 0){ sess.cadSum += live.cadence*dt; sess.cadN += dt; }
     }
-    hist.push(active?live.power:0); if (hist.length>120) hist.shift();
+    if (isLive()){ hist.push(active ? live.power : 0); if (hist.length > 120) hist.shift(); }
+    if (active && Date.now() - lastSave > 5000) saveCurrent();
     updateUI();
   }
 
-  function fmtTime(s){ s=Math.floor(s); const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60;
-    return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0'); }
-
   function updateUI(){
-    const eff = +$('eff').value;
-    const kcalPerKj = 1/(4.184*eff);
-    const connected = demoTimer || (device && device.gatt && device.gatt.connected);
-    $('vPower').textContent = connected ? Math.round(live.power) : '–';
-    $('vCad').textContent = connected ? Math.round(live.cadence) : '–';
-    $('vSpeed').textContent = connected ? live.speed.toFixed(1) : '–';
-    $('vHr').textContent = live.hr ? live.hr : '–';
-    $('vKcal').textContent = Math.round(sess.kJ*kcalPerKj);
+    const kcal = kcalOf(sess);
+    $('vPower').textContent = Math.round(live.power);
+    $('vCad').textContent = Math.round(live.cadence);
+    $('vSpeed').textContent = live.speed.toFixed(1).replace('.',',');
+    $('vHr').textContent = live.hr || '–';
+    $('vKcal').textContent = kcal;
     $('vKj').textContent = Math.round(sess.kJ);
-    $('vRate').textContent = Math.round(live.power*3.6*kcalPerKj);
-    $('vTrainerKcal').textContent = live.trainerKcal!=null ? `Valeur affichée par le home trainer : ${live.trainerKcal} kcal` : '';
+    $('vRate').textContent = Math.round(live.power*3.6*kcalPerKj());
+    $('vTrainerKcal').textContent = live.trainerKcal!=null ? ` · home trainer : ${live.trainerKcal} kcal` : '';
     $('vTime').textContent = fmtTime(sess.elapsed);
-    $('vDist').textContent = sess.dist.toFixed(2);
+    $('vDist').textContent = sess.dist.toFixed(1).replace('.',',');
     $('vAvgP').textContent = sess.elapsed ? Math.round(sess.kJ*1000/sess.elapsed) : 0;
     $('vMaxP').textContent = Math.round(sess.maxP);
     $('vAvgC').textContent = sess.cadN ? Math.round(sess.cadSum/sess.cadN) : 0;
-    drawChart();
-    funUpdate(Math.round(sess.kJ*kcalPerKj), connected);
+    if (isLive()){ drawChart(); funUpdate(kcal); }
   }
 
-  // ---------- Fun : coach, gourmandises, paliers, confettis ----------
+  function drawChart(){
+    const c = $('chart'), dpr = window.devicePixelRatio||1, w = c.clientWidth, h = c.clientHeight;
+    if (!w) return;
+    if (c.width !== w*dpr){ c.width = w*dpr; c.height = h*dpr; }
+    const g = c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+    if (hist.length < 2) return;
+    const max = Math.max(200, ...hist)*1.1, n = 120, x0 = (n-hist.length)/(n-1)*w;
+    g.beginPath();
+    hist.forEach((p,i) => { const x = (i+(n-hist.length))/(n-1)*w, y = h - p/max*h; i ? g.lineTo(x,y) : g.moveTo(x,y); });
+    g.strokeStyle = '#ff4f8b'; g.lineWidth = 2.5; g.lineJoin = 'round'; g.stroke();
+    g.lineTo(w,h); g.lineTo(x0,h); g.closePath();
+    const gr = g.createLinearGradient(0,0,0,h); gr.addColorStop(0,'rgba(255,79,139,.35)'); gr.addColorStop(1,'rgba(255,79,139,0)');
+    g.fillStyle = gr; g.fill();
+  }
+
+  // ---------- Coach, gourmandises, paliers ----------
   const FOODS = [
     {e:'🍬',n:'un bonbon',k:20},{e:'🍎',n:'une pomme',k:60},{e:'🍌',n:'une banane',k:100},
     {e:'🥐',n:'un croissant',k:230},{e:'🍫',n:'un pain au chocolat',k:270},{e:'🍕',n:'une part de pizza',k:300},
@@ -421,109 +623,72 @@
   ];
   const CHEERS = ["Tu gères ! 💪","Continue comme ça !","Chaque coup de pédale compte ✨","Respire, souris, pédale 😄",
     "Les jambes en feu, le moral au top 🔥","Tu es plus fort·e que tu ne le crois !","Allez, on lâche rien !","Quelle régularité, bravo 👏"];
-  const fun = {lastKcalStep:0, lastMin:0, lastFood:-1, lastRecord:0, coachAt:0, idleSince:null, cheerI:0, prevMax:0};
+  const fun = {lastMin:0, lastFood:-1, lastRecord:0, coachAt:0, idleSince:null, cheerI:0, prevMax:0};
+  function foodIndex(kcal){ let r=-1; FOODS.forEach((f,i)=>{ if (kcal>=f.k) r=i; }); return r; }
+  function syncFun(){ fun.lastFood = foodIndex(kcalOf(sess)); fun.lastMin = Math.floor(sess.elapsed/300)*5; fun.prevMax = sess.maxP; }
 
-  function coach(face, txt, sub){
-    $('coachFace').textContent = face;
-    $('coachSay').innerHTML = txt + (sub?`<small>${sub}</small>`:'');
-  }
-  let toastT=null;
-  function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),2800); }
-  function pop(id){ const el=$(id); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+  function coach(face, txt, sub){ $('coachFace').textContent = face; $('coachSay').innerHTML = txt + (sub ? `<small>${sub}</small>` : ''); fun.coachAt = Date.now(); }
 
-  function funUpdate(kcal, connected){
-    // gourmandises
-    let reached = -1; FOODS.forEach((f,i)=>{ if (kcal>=f.k) reached=i; });
-    const next = FOODS[reached+1];
+  function funUpdate(kcal){
+    const reached = foodIndex(kcal), next = FOODS[reached+1];
     if (next){
-      const from = reached>=0?FOODS[reached].k:0;
-      $('foodTxt').innerHTML = `Prochain objectif : ${next.e} ${next.n} <b>(${next.k-kcal} kcal)</b>`;
+      const from = reached>=0 ? FOODS[reached].k : 0;
+      $('foodTxt').innerHTML = `Prochain : ${next.e} ${next.n} — encore <b>${next.k-kcal} kcal</b>`;
       $('foodBar').style.width = Math.min(100,(kcal-from)/(next.k-from)*100)+'%';
     } else {
-      $('foodTxt').innerHTML = `Légende vivante 👑 ${(kcal/1000).toFixed(1)} menus fast-food éliminés !`;
+      $('foodTxt').innerHTML = `Légende vivante 👑 ${(kcal/1000).toFixed(1).replace('.',',')} menus fast-food éliminés !`;
       $('foodBar').style.width = '100%';
     }
     $('foodEmo').textContent = FOODS.slice(0,reached+1).map(f=>f.e).join('');
-    if (reached > fun.lastFood){
-      if (fun.lastFood >= -1 && reached>=0 && kcal>0){ toast(`${FOODS[reached].e} Tu as brûlé ${FOODS[reached].n} !`); confetti(); pop('vKcal'); }
-      fun.lastFood = reached;
-    }
-    // paliers de calories
-    const step = Math.floor(kcal/50);
-    if (step > fun.lastKcalStep){ fun.lastKcalStep = step; if (reached<0 || FOODS[reached].k !== kcal) { pop('vKcal'); } }
-    // paliers de temps
+    if (reached > fun.lastFood){ toast(`${FOODS[reached].e} Tu as brûlé ${FOODS[reached].n} !`); confetti(); pop('vKcal'); }
+    fun.lastFood = Math.max(fun.lastFood, reached);
+
     const min = Math.floor(sess.elapsed/300)*5;
     if (min > fun.lastMin){ fun.lastMin = min; toast(`⏱️ ${min} minutes déjà, bravo !`); confetti(60); }
-    // record de puissance
-    if (sess.elapsed > 60 && sess.maxP > fun.prevMax*1.03 && fun.prevMax>0 && Date.now()-fun.lastRecord > 20000){
-      fun.lastRecord = Date.now(); toast(`🚀 Nouveau record : ${Math.round(sess.maxP)} W !`); pop('vMaxP');
+    if (sess.elapsed > 60 && fun.prevMax > 0 && sess.maxP > fun.prevMax*1.03 && Date.now()-fun.lastRecord > 20000){
+      fun.lastRecord = Date.now(); toast(`🚀 Nouveau record : ${Math.round(sess.maxP)} W !`);
     }
     fun.prevMax = Math.max(fun.prevMax, sess.maxP);
 
-    // coach
-    const now = Date.now();
-    if (!connected){ if (sess.elapsed===0) return;
-      coach('😴','En pause…',`${kcal} kcal au compteur. Reviens quand tu veux !`); return; }
-    const active = live.power>0 || live.cadence>0;
-    if (!active){ fun.idleSince = fun.idleSince||now;
-      if (now-fun.idleSince > 4000) coach('🥤','Petite pause hydratation ?', sess.elapsed>0?'Tes jambes t\'attendent, reprends quand tu es prêt·e.':'Donne quelques coups de pédale pour démarrer !');
+    const now = Date.now(), active = live.power > 0 || live.cadence > 0;
+    if (!active){ fun.idleSince = fun.idleSince || now;
+      if (now - fun.idleSince > 4000) coach('🥤','Petite pause ?', sess.elapsed>0 ? 'Bois un coup, la séance est en pause.' : 'Donne quelques coups de pédale pour démarrer !');
       return; }
     fun.idleSince = null;
-    if (now - fun.coachAt < 6000) return;
-    fun.coachAt = now;
+    if (now - fun.coachAt < 7000) return;
     const avg = sess.elapsed ? sess.kJ*1000/sess.elapsed : 0;
     if (sess.elapsed < 90) coach('🔥','Échauffement en cours…','On monte en température tranquillement.');
-    else if (live.power > avg*1.2 && live.power>80) coach('⚡','Waouh, quelle puissance !',`${Math.round(live.power)} W, tu envoies du lourd !`);
-    else if (live.cadence && live.cadence < 60) coach('🐢','Fais tourner les jambes !','Une cadence vers 80–90 rpm, c\'est plus facile pour les genoux.');
+    else if (live.power > avg*1.2 && live.power > 80) coach('⚡','Waouh, quelle puissance !',`${Math.round(live.power)} W, tu envoies du lourd !`);
+    else if (live.cadence && live.cadence < 60) coach('🐢','Fais tourner les jambes !','Vise 80–90 rpm, c\'est plus doux pour les genoux.');
     else if (live.cadence > 100) coach('🌪️','Mode moulinette activé !','Superbe vélocité !');
-    else { coach(['💪','😎','🤩','🥳','🦾'][fun.cheerI%5], CHEERS[fun.cheerI%CHEERS.length], next?`Encore ${next.k-kcal} kcal pour ${next.e} ${next.n}.`:'Tu es inarrêtable !'); fun.cheerI++; }
+    else { coach(['💪','😎','🤩','🥳','🦾'][fun.cheerI%5], CHEERS[fun.cheerI%CHEERS.length], next ? `Encore ${next.k-kcal} kcal pour ${next.e} ${next.n}.` : 'Tu es inarrêtable !'); fun.cheerI++; }
   }
 
-  // confettis
+  // Confettis
   const parts = []; let confRun = false;
   function confetti(n=120){
-    const c=$('confetti'), W=innerWidth;
-    const cols=['#ff4f8b','#ffc83d','#38e0a6','#4fc3ff','#b388ff','#fff'];
-    for(let i=0;i<n;i++) parts.push({x:W/2+(Math.random()-.5)*W*.3,y:-10,vx:(Math.random()-.5)*12,vy:Math.random()*-4-2,
-      r:Math.random()*6+4,a:Math.random()*6,va:(Math.random()-.5)*.3,c:cols[i%cols.length],life:0});
-    if (!confRun){ confRun=true; requestAnimationFrame(confStep); }
+    const W = innerWidth, cols = ['#ff4f8b','#ffc83d','#38e0a6','#4fc3ff','#b388ff','#fff'];
+    for (let i=0;i<n;i++) parts.push({x:W/2+(Math.random()-.5)*W*.3, y:-10, vx:(Math.random()-.5)*12, vy:Math.random()*-4-2,
+      r:Math.random()*6+4, a:Math.random()*6, va:(Math.random()-.5)*.3, c:cols[i%cols.length], life:0});
+    if (!confRun){ confRun = true; requestAnimationFrame(confStep); }
   }
   function confStep(){
-    const c=$('confetti'), dpr=devicePixelRatio||1;
-    if (c.width!==innerWidth*dpr){ c.width=innerWidth*dpr; c.height=innerHeight*dpr; }
-    const g=c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,innerWidth,innerHeight);
-    for(let i=parts.length-1;i>=0;i--){ const p=parts[i];
-      p.vy+=.25; p.vx*=.99; p.x+=p.vx; p.y+=p.vy; p.a+=p.va; p.life++;
-      g.save(); g.translate(p.x,p.y); g.rotate(p.a); g.fillStyle=p.c; g.fillRect(-p.r/2,-p.r/4,p.r,p.r/2); g.restore();
-      if (p.y>innerHeight+20 || p.life>300) parts.splice(i,1); }
-    if (parts.length) requestAnimationFrame(confStep); else { confRun=false; g.clearRect(0,0,innerWidth,innerHeight); }
+    const c = $('confetti'), dpr = devicePixelRatio||1;
+    if (c.width !== innerWidth*dpr){ c.width = innerWidth*dpr; c.height = innerHeight*dpr; }
+    const g = c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,innerWidth,innerHeight);
+    for (let i=parts.length-1;i>=0;i--){ const p = parts[i];
+      p.vy += .25; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.a += p.va; p.life++;
+      g.save(); g.translate(p.x,p.y); g.rotate(p.a); g.fillStyle = p.c; g.fillRect(-p.r/2,-p.r/4,p.r,p.r/2); g.restore();
+      if (p.y > innerHeight+20 || p.life > 300) parts.splice(i,1); }
+    if (parts.length) requestAnimationFrame(confStep); else { confRun = false; g.clearRect(0,0,innerWidth,innerHeight); }
   }
 
-  function drawChart(){
-    const c = $('chart'), dpr = window.devicePixelRatio||1;
-    const w = c.clientWidth, h = c.clientHeight;
-    if (c.width !== w*dpr){ c.width = w*dpr; c.height = h*dpr; }
-    const g = c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
-    if (hist.length < 2) return;
-    const max = Math.max(200, ...hist)*1.1, n = 120;
-    g.beginPath();
-    hist.forEach((p,i)=>{ const x = (i+(n-hist.length))/(n-1)*w, y = h - p/max*h; i?g.lineTo(x,y):g.moveTo(x,y); });
-    g.strokeStyle = '#ff4f8b'; g.lineWidth = 2; g.stroke();
-    g.lineTo(w,h); g.lineTo((n-hist.length)/(n-1)*w,h); g.closePath();
-    const grad = g.createLinearGradient(0,0,0,h); grad.addColorStop(0,'rgba(255,79,139,.35)'); grad.addColorStop(1,'rgba(255,79,139,0)');
-    g.fillStyle = grad; g.fill();
-  }
-
+  // ---------- Démarrage ----------
   $('btnConnect').onclick = connect;
-  $('btnDisconnect').onclick = disconnect;
-  $('btnDemo').onclick = () => demoTimer ? stopDemo() : startDemo();
-  $('btnReset').onclick = reset;
-  $('eff').onchange = updateUI;
-
-  applyMode(false);
+  $('btnDemo').onclick = startDemo;
+  syncFun(); applyMode(false); setView(); updateUI();
   setInterval(tick, 1000);
-  updateUI();
-  const pb = btSupportProblem(); if (pb) showMsg(pb);
+  const pb = btProblem(); if (pb) showMsg(pb);
 })();
 </script>
 </body>
