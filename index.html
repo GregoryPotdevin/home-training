@@ -3,144 +3,190 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#140f2b">
+<meta name="theme-color" content="#ffe4f1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Home Trainer</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Home Trainer">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#140f2b; --panel:#1f1842; --panel2:#2a2156; --line:#342a66; --text:#f4f1ff; --muted:#a69cd6;
-    --accent:#ff4f8b; --accent2:#ffc83d; --ok:#38e0a6; --blue:#4fc3ff;
+    --bg:#fff0f7; --panel:#ffffff; --panel2:#fff3f9; --line:#f7d6e8; --text:#4b2148; --muted:#a47c9f;
+    --accent:#ff4fa3; --accent2:#a874ff; --ok:#2fcf9f; --sun:#ffc94d; --peach:#ffab85; --mint:#7fe3cc;
+    --grad:linear-gradient(135deg,#ff5fae 0%,#ff8fc8 45%,#b27cff 100%);
+    --shadow:0 10px 26px -14px rgba(214,70,150,.45);
     --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0}
-  body{color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh;min-height:100dvh;
-    background:radial-gradient(900px 500px at 0% -10%,#3b1f7a 0%,transparent 60%),radial-gradient(700px 400px at 110% 0%,#7a1f5c 0%,transparent 55%),var(--bg);
+  body{color:var(--text);font-family:Nunito,system-ui,sans-serif;min-height:100vh;min-height:100dvh;
+    background:
+      radial-gradient(600px 380px at -10% -5%,#ffd0e8 0%,transparent 65%),
+      radial-gradient(600px 400px at 115% 10%,#e3d2ff 0%,transparent 60%),
+      radial-gradient(500px 400px at 50% 110%,#d4f7ee 0%,transparent 60%),var(--bg);
     background-attachment:fixed}
-  .wrap{max-width:520px;margin:0 auto;padding:calc(12px + var(--st)) 14px calc(28px + var(--sb))}
-  button{font:600 15px Inter,sans-serif;color:var(--text);border:none;cursor:pointer;touch-action:manipulation}
-  .num{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
-  .lbl{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:600}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:14px 16px;margin-top:10px}
+  body::before{content:"✦  ·  ✧    ·   ✦      ·  ✧   ·    ✦  ·   ✧";position:fixed;inset:0;pointer-events:none;color:#ffb3d9;
+    font-size:14px;letter-spacing:22px;line-height:120px;opacity:.55;word-break:break-all;z-index:0}
+  .wrap{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:calc(12px + var(--st)) 14px calc(28px + var(--sb))}
+  button{font:800 15px Nunito,sans-serif;color:var(--text);border:none;cursor:pointer;touch-action:manipulation}
+  .num{font-family:Fredoka,"Nunito",sans-serif;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+  .lbl{font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .card{background:var(--panel);border:2px solid var(--line);border-radius:26px;padding:14px 16px;margin-top:12px;box-shadow:var(--shadow)}
   .hidden{display:none!important}
   body:not(.live) .live-only{display:none!important}
   body.live .off-only{display:none!important}
 
   /* ---------- Écran déconnecté ---------- */
-  .brand{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.5px;margin:6px 0 4px}
-  .brand span{color:var(--accent)}
-  .welcome{text-align:center;padding:26px 8px 8px}
-  .welcome .face{font-size:72px;animation:bob 1.6s ease-in-out infinite;display:inline-block}
-  .welcome h2{font-family:"Barlow Condensed",sans-serif;font-size:30px;margin:8px 0 4px}
-  .welcome p{color:var(--muted);margin:0 auto;max-width:340px;font-size:15px;line-height:1.4}
-  .connect{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;margin-top:22px;
-    padding:24px 18px;border-radius:24px;font-size:21px;font-weight:700;color:#fff;
-    background:linear-gradient(135deg,#ff4f8b,#ff8a3d);box-shadow:0 14px 36px -12px rgba(255,79,139,.75);animation:pulse 2.2s infinite}
+  .brand{display:flex;align-items:center;gap:10px;font-family:Fredoka,sans-serif;font-weight:600;font-size:27px;margin:6px 0 4px;color:var(--text)}
+  .brand span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand img{width:38px;height:38px;border-radius:12px;box-shadow:var(--shadow)}
+  .install{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:13px 16px;border-radius:22px;
+    background:var(--panel);border:2px dashed #f3b9d8;text-align:left;box-shadow:var(--shadow)}
+  .install img{width:42px;height:42px;border-radius:12px;flex:none}
+  .install .t{font-weight:800}
+  .install .s{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:2px}
+  .welcome{text-align:center;padding:16px 8px 4px}
+  .welcome .face{width:150px;height:150px;margin:0 auto;animation:bob 2s ease-in-out infinite}
+  .welcome .face svg{width:100%;height:100%;filter:drop-shadow(0 10px 14px rgba(214,70,150,.25))}
+  .welcome h2{font-family:Fredoka,sans-serif;font-weight:600;font-size:30px;margin:6px 0 4px}
+  .welcome p{color:var(--muted);margin:0 auto;max-width:340px;font-size:15px;line-height:1.45;font-weight:600}
+  .connect{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;margin-top:20px;
+    padding:24px 18px;border-radius:30px;font-size:21px;font-weight:900;color:#fff;letter-spacing:.2px;
+    background:var(--grad);box-shadow:0 16px 34px -12px rgba(255,79,163,.7);animation:pulse 2.2s infinite;position:relative;overflow:hidden}
+  .connect::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);
+    transform:skewX(-20deg);animation:shine 3.2s infinite}
   .connect:active{transform:scale(.98)}
-  .connect .ico{font-size:28px}
-  @keyframes pulse{0%,100%{box-shadow:0 14px 36px -12px rgba(255,79,139,.75),0 0 0 0 rgba(255,79,139,.45)}60%{box-shadow:0 14px 36px -12px rgba(255,79,139,.75),0 0 0 14px rgba(255,79,139,0)}}
-  .linkbtn{background:none;color:var(--muted);text-decoration:underline;font-weight:500;padding:14px;width:100%}
-  .msg{margin-top:12px;padding:12px 14px;border-radius:16px;font-size:14px;line-height:1.45;background:#3a1630;border:1px solid #6a2850;color:#ffd6e6}
-  .msg b{color:#fff}
+  .connect .ico{font-size:26px}
+  @keyframes shine{0%,60%{left:-60%}100%{left:130%}}
+  @keyframes pulse{0%,100%{box-shadow:0 16px 34px -12px rgba(255,79,163,.7),0 0 0 0 rgba(255,79,163,.35)}60%{box-shadow:0 16px 34px -12px rgba(255,79,163,.7),0 0 0 14px rgba(255,79,163,0)}}
+  .linkbtn{background:none;color:var(--accent2);text-decoration:underline;text-underline-offset:3px;font-weight:800;padding:14px;width:100%}
+  .msg{margin-top:12px;padding:12px 14px;border-radius:20px;font-size:14px;line-height:1.45;background:#fff4e6;border:2px solid #ffd7a8;color:#8a4b1c;font-weight:600}
+  .msg b{color:#6b3410}
   .resume{display:flex;align-items:center;gap:12px}
-  .resume .txt{flex:1;font-size:14px;line-height:1.4}
-  .resume .txt b{font-size:16px}
-  .btn{background:var(--panel2);border:1px solid var(--line);padding:11px 14px;border-radius:14px}
-  .btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+  .resume .txt{flex:1;font-size:14px;line-height:1.4;font-weight:600}
+  .resume .txt b{font-size:16px;font-weight:900}
+  .btn{background:var(--panel2);border:2px solid var(--line);padding:11px 14px;border-radius:16px}
 
   /* ---------- Barre du haut (connecté) ---------- */
   .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .pill{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);background:rgba(255,255,255,.05);padding:7px 12px;border-radius:99px;min-width:0}
+  .pill{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--muted);background:#fff;border:2px solid var(--line);padding:7px 12px;border-radius:99px;min-width:0}
   .pill span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .dot{width:9px;height:9px;border-radius:50%;background:#666;flex:none}
-  .dot.on{background:var(--ok);box-shadow:0 0 8px var(--ok)}
-  .dot.demo{background:var(--accent2)}
-  .more{background:rgba(255,255,255,.08);border-radius:99px;padding:9px 16px;font-size:15px;display:flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:50%;background:#ccc;flex:none}
+  .dot.on{background:var(--ok);box-shadow:0 0 0 4px rgba(47,207,159,.2)}
+  .dot.demo{background:var(--sun);box-shadow:0 0 0 4px rgba(255,201,77,.25)}
+  .more{background:#fff;border:2px solid var(--line);border-radius:99px;padding:8px 16px;font-size:15px;display:flex;align-items:center;gap:6px;color:var(--accent)}
 
   /* ---------- Héros : calories, gourmandises, temps ---------- */
-  .hero{background:linear-gradient(150deg,#ff4f8b 0%,#ff7a45 55%,#ffb03d 100%);border:none;color:#fff;
-    box-shadow:0 16px 40px -16px rgba(255,79,139,.8)}
-  .hero .lbl{color:rgba(255,255,255,.85)}
-  .coachline{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;line-height:1.25;min-height:40px}
-  .coachline .face{font-size:30px;animation:bob 1.6s ease-in-out infinite;flex:none}
-  .coachline small{display:block;font-weight:500;font-size:12.5px;opacity:.92;margin-top:1px}
+  .hero{background:var(--grad);border:none;color:#fff;box-shadow:0 18px 40px -16px rgba(255,79,163,.75);position:relative;overflow:hidden}
+  .hero::before{content:"✦";position:absolute;right:18px;top:62px;font-size:22px;opacity:.5}
+  .hero::after{content:"✧";position:absolute;left:46%;bottom:44px;font-size:16px;opacity:.5}
+  .hero .lbl{color:rgba(255,255,255,.9)}
+  .coachline{display:flex;align-items:center;gap:10px;font-weight:900;font-size:15px;line-height:1.25;min-height:40px;
+    background:rgba(255,255,255,.2);border-radius:18px;padding:8px 12px;margin:-2px -4px 0}
+  .coachline .face{font-size:28px;animation:bob 1.6s ease-in-out infinite;flex:none}
+  .coachline small{display:block;font-weight:700;font-size:12.5px;opacity:.95;margin-top:1px}
   @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-4px) rotate(4deg)}}
-  .heroRow{display:flex;align-items:flex-end;justify-content:space-between;margin-top:10px}
-  .kcal{font-size:76px}
-  .kcal small,.time small{font-family:Inter,sans-serif;font-size:16px;font-weight:600;opacity:.85;margin-left:4px}
-  .time{font-size:44px;text-align:right}
+  .heroRow{display:flex;align-items:flex-end;justify-content:space-between;margin-top:12px}
+  .kcal{font-size:78px;text-shadow:0 4px 0 rgba(120,30,110,.15)}
+  .kcal small,.time small{text-shadow:none;font-family:Nunito,sans-serif;font-size:16px;font-weight:800;opacity:.9;margin-left:4px}
+  .time{font-size:44px;text-align:right;text-shadow:0 3px 0 rgba(120,30,110,.12)}
   .emo{font-size:26px;letter-spacing:3px;line-height:1.25;margin-top:8px;min-height:6px;word-break:break-all}
-  .foodTxt{font-size:13.5px;margin-top:6px;opacity:.95}
-  .bar{height:9px;border-radius:99px;background:rgba(0,0,0,.18);overflow:hidden;margin-top:6px}
-  .bar i{display:block;height:100%;border-radius:99px;background:#fff;transition:width .6s}
+  .foodTxt{font-size:13.5px;margin-top:6px;font-weight:700}
+  .bar{height:12px;border-radius:99px;background:rgba(255,255,255,.3);overflow:hidden;margin-top:6px}
+  .bar i{display:block;height:100%;border-radius:99px;background:repeating-linear-gradient(45deg,#fff 0 10px,#ffe6f3 10px 20px);transition:width .6s}
 
   /* ---------- Puissance ---------- */
   .pwRow{display:flex;justify-content:space-between;align-items:flex-end}
-  .pw{font-size:60px;color:var(--accent)}
-  .pw small,.avg small,.stat .num small{font-family:Inter,sans-serif;font-size:14px;color:var(--muted);font-weight:600;margin-left:3px}
-  .avg{font-size:36px;text-align:right}
+  .pw{font-size:62px;color:var(--accent)}
+  .pw small,.avg small,.stat .num small{font-family:Nunito,sans-serif;font-size:14px;color:var(--muted);font-weight:800;margin-left:3px}
+  .avg{font-size:38px;text-align:right;color:var(--accent2)}
   canvas#chart{width:100%;height:64px;display:block;margin-top:8px}
 
   /* ---------- Réglages ---------- */
-  .seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--bg);border-radius:14px;padding:4px;gap:4px}
-  .seg button{background:transparent;color:var(--muted);padding:10px 4px;border-radius:11px;font-size:14px}
-  .seg button.act{background:var(--panel2);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.25)}
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--panel2);border-radius:18px;padding:4px;gap:4px;border:2px solid var(--line)}
+  .seg button{background:transparent;color:var(--muted);padding:10px 4px;border-radius:14px;font-size:14px}
+  .seg button.act{background:var(--grad);color:#fff;box-shadow:0 6px 14px -6px rgba(255,79,163,.7)}
   .dial{display:flex;align-items:center;justify-content:space-between;margin:14px 0 6px;gap:10px}
-  .step{width:64px;height:64px;border-radius:20px;background:var(--panel2);border:1px solid var(--line);font-size:30px;flex:none;line-height:1}
-  .step:active{background:var(--accent);border-color:var(--accent)}
+  .step{width:66px;height:66px;border-radius:24px;background:var(--panel2);border:2px solid var(--line);font-size:32px;flex:none;line-height:1;color:var(--accent);font-family:Fredoka,sans-serif}
+  .step:active{background:var(--accent);border-color:var(--accent);color:#fff;transform:scale(.94)}
   .tv{text-align:center;flex:1}
-  .tv .num{font-size:52px}
-  .tv .num small{font-family:Inter,sans-serif;font-size:18px;color:var(--muted);margin-left:2px}
-  .tv .lbl{margin-top:4px;text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:500}
+  .tv .num{font-size:54px}
+  .tv .num small{font-family:Nunito,sans-serif;font-size:18px;color:var(--muted);margin-left:2px;font-weight:800}
+  .tv .lbl{margin-top:4px;text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:700}
   input[type=range]{width:100%;accent-color:var(--accent);height:30px;margin:2px 0}
   .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
   .chips::-webkit-scrollbar{display:none}
-  .chips button{flex:1 0 auto;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:8px 12px;font-size:13.5px}
-  .chips button.act{border-color:var(--accent);color:var(--accent)}
+  .chips button{flex:1 0 auto;background:var(--panel2);border:2px solid var(--line);border-radius:99px;padding:7px 12px;font-size:13.5px;color:var(--muted)}
+  .chips button.act{border-color:var(--accent);color:var(--accent);background:#fff}
 
   /* ---------- Stats ---------- */
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-  .stat{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:10px 12px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .stat{background:var(--panel);border:2px solid var(--line);border-radius:22px;padding:10px 12px;box-shadow:var(--shadow)}
   .stat .num{font-size:30px;margin-top:4px}
-  .foot{font-size:12px;color:var(--muted);margin-top:10px;text-align:center;line-height:1.4}
+  .stats .stat:nth-child(3n+1) .num{color:#ff5fae}
+  .stats .stat:nth-child(3n+2) .num{color:#a874ff}
+  .stats .stat:nth-child(3n) .num{color:#20b98c}
+  .foot{font-size:12px;color:var(--muted);margin-top:10px;text-align:center;line-height:1.45;font-weight:700}
 
   /* ---------- Historique ---------- */
-  h3{font-family:"Barlow Condensed",sans-serif;font-size:22px;margin:22px 0 4px;text-transform:uppercase;letter-spacing:.5px}
+  h3{font-family:Fredoka,sans-serif;font-weight:600;font-size:22px;margin:24px 0 4px}
   .totals{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
   .totals .stat .num{font-size:26px}
-  .hitem{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px 14px;margin-top:8px}
+  .hitem{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:2px solid var(--line);border-radius:22px;padding:12px 14px;margin-top:8px;box-shadow:var(--shadow)}
   .hitem .d{flex:1;min-width:0}
-  .hitem .t{font-weight:700;font-size:15px}
-  .hitem .s{font-size:13px;color:var(--muted);margin-top:3px}
+  .hitem .t{font-weight:900;font-size:15px}
+  .hitem .s{font-size:13px;color:var(--muted);margin-top:3px;font-weight:600}
   .hitem .e{font-size:18px;letter-spacing:1px;margin-top:4px;word-break:break-all}
-  .hitem .k{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:28px;color:var(--accent2);text-align:right;line-height:1}
-  .hitem .k small{font-family:Inter;font-size:12px;color:var(--muted);display:block;font-weight:600}
-  .hitem .del{background:none;color:var(--muted);font-size:13px;padding:6px 0 0;text-decoration:underline;font-weight:500}
-  .empty{color:var(--muted);font-size:14px;text-align:center;padding:18px;border:1px dashed var(--line);border-radius:18px;margin-top:8px}
+  .hitem .k{font-family:Fredoka,sans-serif;font-weight:600;font-size:30px;color:var(--accent);text-align:right;line-height:1}
+  .hitem .k small{font-family:Nunito;font-size:12px;color:var(--muted);display:block;font-weight:800}
+  .hitem .del{background:none;color:var(--muted);font-size:13px;padding:6px 0 0;text-decoration:underline;font-weight:700}
+  .empty{color:var(--muted);font-size:14px;text-align:center;padding:18px;border:2px dashed #f3b9d8;border-radius:22px;margin-top:8px;font-weight:700;background:rgba(255,255,255,.6)}
 
-  /* ---------- Feuille d'actions ---------- */
-  .scrim{position:fixed;inset:0;background:rgba(5,3,15,.6);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:.25s;z-index:30}
+  /* ---------- Feuilles ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(75,33,72,.35);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:.25s;z-index:30}
   .scrim.show{opacity:1;pointer-events:auto}
-  .sheet{visibility:hidden;position:fixed;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;background:#1b1540;border-radius:26px 26px 0 0;
-    padding:10px 16px calc(18px + var(--sb));transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.9,.3,1),visibility .3s;z-index:31;max-height:88vh;overflow:auto}
+  .sheet{visibility:hidden;position:fixed;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;background:#fff7fb;border-radius:30px 30px 0 0;
+    padding:10px 16px calc(18px + var(--sb));transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.9,.3,1),visibility .3s;z-index:31;max-height:88vh;overflow:auto;
+    box-shadow:0 -10px 40px rgba(214,70,150,.25)}
   .sheet.show{transform:none;visibility:visible}
-  .grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 12px}
-  .act-list button{display:flex;align-items:center;gap:14px;width:100%;background:var(--panel);border:1px solid var(--line);
-    border-radius:16px;padding:15px 16px;margin-top:8px;font-size:16px;text-align:left}
+  .grab{width:44px;height:5px;border-radius:9px;background:#f3c1dc;margin:0 auto 12px}
+  .act-list button{display:flex;align-items:center;gap:14px;width:100%;background:#fff;border:2px solid var(--line);
+    border-radius:20px;padding:15px 16px;margin-top:8px;font-size:16px;text-align:left}
   .act-list button .i{font-size:22px;width:28px;text-align:center}
-  .act-list button.warn{color:#ff9fbd}
-  .act-list button.confirm{background:#5a1838;border-color:var(--accent)}
-  .setting{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 16px;margin-top:8px;font-size:15px}
-  select{font:600 14px Inter,sans-serif;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px}
-  .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
+  .act-list button.warn{color:#d23d7e}
+  .act-list button.confirm{background:#ffe0ef;border-color:var(--accent)}
+  .act-list button.fancy{background:var(--grad);color:#fff;border-color:transparent}
+  .setting{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:2px solid var(--line);border-radius:20px;padding:12px 16px;margin-top:8px;font-size:15px;font-weight:700}
+  select{font:800 14px Nunito,sans-serif;background:var(--panel2);color:var(--text);border:2px solid var(--line);border-radius:12px;padding:8px}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45;font-weight:600}
   details{margin-top:10px}
-  details summary{cursor:pointer;font-size:13px;color:var(--muted);padding:6px 0}
+  details summary{cursor:pointer;font-size:13px;color:var(--muted);padding:6px 0;font-weight:700}
   .log{font:12px ui-monospace,Menlo,monospace;color:var(--muted);max-height:140px;overflow:auto;white-space:pre-wrap}
 
-  .toast{position:fixed;left:50%;top:calc(14px + var(--st));transform:translate(-50%,-250%);background:#fff;color:#2a1660;
-    font:700 16px Inter,sans-serif;padding:12px 20px;border-radius:99px;box-shadow:0 12px 30px rgba(0,0,0,.35);
+  /* ---------- Coachs animaux ---------- */
+  .buddy{position:fixed;left:12px;right:12px;bottom:calc(14px + var(--sb));max-width:496px;margin:0 auto;display:flex;align-items:flex-end;gap:8px;
+    z-index:35;pointer-events:none;transform:translateY(160%);transition:transform .55s cubic-bezier(.2,1.5,.4,1)}
+  .buddy.show{transform:none;pointer-events:auto}
+  .buddy .av{width:104px;height:104px;flex:none;animation:wiggle 1.2s ease-in-out infinite;filter:drop-shadow(0 8px 10px rgba(120,30,110,.25))}
+  .buddy .bubble{position:relative;background:#fff;border:2px solid var(--line);border-radius:22px;padding:10px 14px;margin-bottom:34px;
+    box-shadow:var(--shadow);font-weight:800;font-size:15px;line-height:1.3}
+  .buddy .bubble::before{content:"";position:absolute;left:-9px;bottom:14px;width:16px;height:16px;background:#fff;border-left:2px solid var(--line);border-bottom:2px solid var(--line);transform:rotate(45deg)}
+  .buddy .bubble small{display:block;color:var(--accent);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px}
+  @keyframes wiggle{0%,100%{transform:rotate(-5deg) translateY(0)}50%{transform:rotate(5deg) translateY(-6px)}}
+  .gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .gcard{background:#fff;border:2px solid var(--line);border-radius:22px;padding:10px;text-align:center;box-shadow:var(--shadow)}
+  .gcard svg{width:96px;height:96px}
+  .gcard .n{font-family:Fredoka,sans-serif;font-weight:600;font-size:16px}
+  .gcard .q{font-size:12px;color:var(--muted);font-weight:700;margin-top:3px;min-height:30px}
+
+  .toast{position:fixed;left:50%;top:calc(14px + var(--st));transform:translate(-50%,-250%);background:#fff;color:var(--text);border:2px solid #ffc2e1;
+    font:900 16px Nunito,sans-serif;padding:12px 20px;border-radius:99px;box-shadow:0 12px 30px rgba(214,70,150,.35);
     transition:transform .45s cubic-bezier(.2,1.4,.4,1);z-index:40;max-width:92vw;text-align:center}
   .toast.show{transform:translate(-50%,0)}
   #confetti{position:fixed;inset:0;pointer-events:none;z-index:39;width:100%;height:100%}
@@ -153,15 +199,20 @@
 
   <!-- ===== Écran déconnecté ===== -->
   <section class="off-only">
-    <div class="brand">Home <span>Trainer</span></div>
+    <div class="brand"><img src="icons/icon-192.png" alt=""><div>Home <span>Trainer</span></div></div>
     <div class="welcome">
-      <div class="face" id="wFace">🚴</div>
+      <div class="face" id="wFace"></div>
       <h2 id="wTitle">Prêt·e à transpirer ?</h2>
       <p id="wText">Allume ton home trainer, donne quelques coups de pédale pour le réveiller, puis connecte-toi.</p>
     </div>
     <button class="connect" id="btnConnect"><span class="ico">⚡</span><span id="connectTxt">Se connecter</span></button>
     <div class="msg hidden" id="msg"></div>
     <button class="linkbtn" id="btnDemo">ou essayer le mode démo</button>
+
+    <button class="install hidden" id="btnInstall"><img src="icons/icon-192.png" alt="">
+      <div><div class="t">Installer l'application</div><div class="s">Une icône sur ton écran d'accueil, en plein écran, même hors connexion.</div></div></button>
+    <div class="install hidden" id="iosInstall"><img src="icons/icon-192.png" alt="">
+      <div><div class="t">Ajouter à l'écran d'accueil</div><div class="s">Touche <b>Partager</b> <span style="font-size:15px">⎙</span> puis <b>Sur l'écran d'accueil</b>.</div></div></div>
 
     <div class="card resume hidden" id="resumeCard">
       <div class="txt"><b>Séance en cours</b><br><span id="resumeTxt"></span></div>
@@ -221,7 +272,7 @@
       <div class="stat"><div class="lbl">Cad. moy.</div><div class="num"><span id="vAvgC">0</span><small>rpm</small></div></div>
       <div class="stat"><div class="lbl">Cardio</div><div class="num"><span id="vHr">–</span><small>bpm</small></div></div>
     </div>
-    <div class="foot"><span id="vRate">0</span> kcal/h en ce moment · <span id="vKj">0</span> kJ de travail<span id="vTrainerKcal"></span><br>Séance sauvegardée automatiquement sur cet appareil.</div>
+    <div class="foot"><span id="vRate">0</span> kcal/h en ce moment · <span id="vKj">0</span> kJ de travail<span id="vTrainerKcal"></span><br><span id="savedTxt">Sauvegarde automatique toutes les 30 s sur cet appareil.</span></div>
   </section>
 </div>
 
@@ -232,7 +283,9 @@
   <div class="grab"></div>
   <div class="act-list">
     <button id="aEnd"><span class="i">🏁</span>Terminer et enregistrer la séance</button>
+    <button id="aGallery" class="fancy hidden"><span class="i">🦄</span>Galerie des coachs</button>
     <button id="aHist"><span class="i">📜</span>Mes séances</button>
+    <button id="aInstall" class="hidden"><span class="i">📲</span>Installer l'application</button>
     <button id="aReset" class="warn"><span class="i">🔁</span><span id="aResetTxt">Recommencer à zéro (sans enregistrer)</span></button>
     <button id="aDisc"><span class="i">🔌</span><span id="aDiscTxt">Déconnecter</span></button>
   </div>
@@ -255,6 +308,14 @@
   <div id="histOn"></div>
 </div>
 
+<div class="sheet" id="sheetGallery">
+  <div class="grab"></div>
+  <h3 style="margin-top:0">La team des coachs 🦄</h3>
+  <div class="hint" style="margin:0 0 10px">Ils débarquent de temps en temps pendant ta séance pour t'encourager. Touche-en un pour le faire venir.</div>
+  <div class="gallery" id="gallery"></div>
+</div>
+
+<div class="buddy" id="buddy"><div class="av" id="buddyAv"></div><div class="bubble" id="buddyTxt"></div></div>
 <div class="toast" id="toast"></div>
 <canvas id="confetti"></canvas>
 
@@ -301,6 +362,7 @@
   function setView(){
     document.body.classList.toggle('live', isLive());
     $('aDiscTxt').textContent = demoTimer ? 'Arrêter la démo' : 'Déconnecter';
+    $('aGallery').classList.toggle('hidden', !demoTimer);
     renderOff();
   }
 
@@ -489,19 +551,23 @@
     store.set(K_HIST, h.slice(0,500));
   }
   function removeFromHistory(id){ store.set(K_HIST, getHistory().filter(x => x.id !== id)); }
-  let lastSave = 0;
+  let lastSave = Date.now(), savedAt = sess.elapsed;
   function saveCurrent(){
     sess.updated = Date.now(); store.set(K_CUR, sess);
-    if (sess.elapsed >= 60) upsertHistory();      // une séance d'au moins 1 min apparaît dans l'historique
-    lastSave = Date.now();
+    if (sess.elapsed >= 30) upsertHistory();      // une séance d'au moins 30 s apparaît dans l'historique
+    lastSave = Date.now(); savedAt = sess.elapsed;
+  }
+  function flashSaved(){
+    const t = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    $('savedTxt').textContent = `💾 Séance sauvegardée à ${t} (toutes les 30 s).`;
   }
   function newSession(){
-    sess = blankSession(); hist.length = 0; live.trainerKcal = null;
+    sess = blankSession(); savedAt = 0; hist.length = 0; live.trainerKcal = null;
     syncFun(); store.set(K_CUR, sess); updateUI(); renderOff();
   }
   function endSession(){
     closeSheets();
-    if (sess.elapsed < 60){ toast('Séance trop courte (< 1 min), non enregistrée'); newSession(); return; }
+    if (sess.elapsed < 30){ toast('Séance trop courte (< 30 s), non enregistrée'); newSession(); return; }
     saveCurrent();
     const s = summary(sess);
     toast(`🏆 Séance enregistrée : ${s.kcal} kcal en ${fmtDur(s.elapsed)} !`); confetti(160);
@@ -518,7 +584,7 @@
   $('aEnd').onclick = endSession;
   $('btnEndOff').onclick = endSession;
   $('aDisc').onclick = disconnect;
-  $('eff').onchange = e => { settings.eff = +e.target.value; saveSettings(); syncFun(); updateUI(); if (sess.elapsed>=60) upsertHistory(); };
+  $('eff').onchange = e => { settings.eff = +e.target.value; saveSettings(); syncFun(); updateUI(); if (sess.elapsed>=30) upsertHistory(); };
 
   function renderHistory(){
     const h = getHistory();
@@ -562,8 +628,8 @@
     if (has) $('resumeTxt').textContent = `${fmtTime(sess.elapsed)} · ${kcalOf(sess)} kcal ${summary(sess).foods} — reconnecte-toi pour continuer`;
     $('connectTxt').textContent = has ? 'Reprendre ma séance' : 'Se connecter';
     const n = getHistory().length;
-    if (has){ $('wFace').textContent='💪'; $('wTitle').textContent='On continue ?'; $('wText').textContent='Ta séance est gardée au chaud. Reconnecte ton home trainer pour reprendre.'; }
-    else if (n){ $('wFace').textContent='🚴'; $('wTitle').textContent='Content de te revoir !'; $('wText').textContent=`Déjà ${n} séance${n>1?'s':''} au compteur. On en ajoute une ?`; }
+    if (has){ $('wTitle').textContent='On continue ?'; $('wText').textContent='Ta séance est gardée au chaud. Reconnecte ton home trainer pour reprendre.'; }
+    else if (n){ $('wTitle').textContent='Content de te revoir !'; $('wText').textContent=`Déjà ${n} séance${n>1?'s':''} au compteur. On en ajoute une ?`; }
     renderHistory();
   }
 
@@ -578,7 +644,8 @@
       if (live.cadence > 0){ sess.cadSum += live.cadence*dt; sess.cadN += dt; }
     }
     if (isLive()){ hist.push(active ? live.power : 0); if (hist.length > 120) hist.shift(); }
-    if (active && Date.now() - lastSave > 5000) saveCurrent();
+    // Sauvegarde auto toutes les 30 s tant qu'on est connecté et qu'on produit de la puissance
+    if (isLive() && live.power > 0 && sess.elapsed - savedAt >= 30){ saveCurrent(); flashSaved(); }
     updateUI();
   }
 
@@ -609,9 +676,9 @@
     const max = Math.max(200, ...hist)*1.1, n = 120, x0 = (n-hist.length)/(n-1)*w;
     g.beginPath();
     hist.forEach((p,i) => { const x = (i+(n-hist.length))/(n-1)*w, y = h - p/max*h; i ? g.lineTo(x,y) : g.moveTo(x,y); });
-    g.strokeStyle = '#ff4f8b'; g.lineWidth = 2.5; g.lineJoin = 'round'; g.stroke();
+    g.strokeStyle = '#ff4fa3'; g.lineWidth = 3; g.lineJoin = 'round'; g.stroke();
     g.lineTo(w,h); g.lineTo(x0,h); g.closePath();
-    const gr = g.createLinearGradient(0,0,0,h); gr.addColorStop(0,'rgba(255,79,139,.35)'); gr.addColorStop(1,'rgba(255,79,139,0)');
+    const gr = g.createLinearGradient(0,0,0,h); gr.addColorStop(0,'rgba(168,116,255,.35)'); gr.addColorStop(1,'rgba(255,79,163,0)');
     g.fillStyle = gr; g.fill();
   }
 
@@ -655,6 +722,7 @@
       if (now - fun.idleSince > 4000) coach('🥤','Petite pause ?', sess.elapsed>0 ? 'Bois un coup, la séance est en pause.' : 'Donne quelques coups de pédale pour démarrer !');
       return; }
     fun.idleSince = null;
+    maybeBuddy();
     if (now - fun.coachAt < 7000) return;
     const avg = sess.elapsed ? sess.kJ*1000/sess.elapsed : 0;
     if (sess.elapsed < 90) coach('🔥','Échauffement en cours…','On monte en température tranquillement.');
@@ -667,7 +735,7 @@
   // Confettis
   const parts = []; let confRun = false;
   function confetti(n=120){
-    const W = innerWidth, cols = ['#ff4f8b','#ffc83d','#38e0a6','#4fc3ff','#b388ff','#fff'];
+    const W = innerWidth, cols = ['#ff4fa3','#ffc94d','#7fe3cc','#a874ff','#ff9ccf','#9fd0ff'];
     for (let i=0;i<n;i++) parts.push({x:W/2+(Math.random()-.5)*W*.3, y:-10, vx:(Math.random()-.5)*12, vy:Math.random()*-4-2,
       r:Math.random()*6+4, a:Math.random()*6, va:(Math.random()-.5)*.3, c:cols[i%cols.length], life:0});
     if (!confRun){ confRun = true; requestAnimationFrame(confStep); }
@@ -682,6 +750,146 @@
       if (p.y > innerHeight+20 || p.life > 300) parts.splice(i,1); }
     if (parts.length) requestAnimationFrame(confStep); else { confRun = false; g.clearRect(0,0,innerWidth,innerHeight); }
   }
+
+  // ---------- Coachs animaux (dessins originaux) ----------
+  const INK = '#3b1f3a';
+  const eyes = (x,y,d=13,r=5) => `<circle cx="${x-d}" cy="${y}" r="${r}" fill="${INK}"/><circle cx="${x+d}" cy="${y}" r="${r}" fill="${INK}"/><circle cx="${x-d+1.8}" cy="${y-1.8}" r="${r*.4}" fill="#fff"/><circle cx="${x+d+1.8}" cy="${y-1.8}" r="${r*.4}" fill="#fff"/>`;
+  const blush = (x,y,d=22) => `<ellipse cx="${x-d}" cy="${y}" rx="6" ry="3.5" fill="#ff8fc0" opacity=".75"/><ellipse cx="${x+d}" cy="${y}" rx="6" ry="3.5" fill="#ff8fc0" opacity=".75"/>`;
+  const smile = (x,y,w=7) => `<path d="M${x-w} ${y} Q${x} ${y+w} ${x+w} ${y}" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`;
+  const mouth = (x,y) => `<path d="M${x-7} ${y} Q${x} ${y+13} ${x+7} ${y} Z" fill="#c2325f"/>`;
+  const heart = (x,y,s,f) => `<path d="M${x} ${y+s*.9} C${x-s*1.5} ${y-s*.1} ${x-s*.7} ${y-s*1.2} ${x} ${y-s*.35} C${x+s*.7} ${y-s*1.2} ${x+s*1.5} ${y-s*.1} ${x} ${y+s*.9} Z" fill="${f}" stroke="#c41f74" stroke-width="1.5"/>`;
+  const svg = body => `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">${body}</svg>`;
+
+  const BUDDIES = [
+    {n:'Paillette la licorne', a: svg(`
+      <circle cx="40" cy="44" r="15" fill="#ff9fd0"/><circle cx="31" cy="62" r="14" fill="#c7a0ff"/><circle cx="34" cy="81" r="12" fill="#8fe8d4"/><circle cx="42" cy="96" r="9" fill="#ffd36b"/>
+      <path d="M50 44 L52 22 L64 38 Z" fill="#fff" stroke="#f2c6de" stroke-width="2" stroke-linejoin="round"/>
+      <ellipse cx="64" cy="68" rx="34" ry="31" fill="#fff" stroke="#f2c6de" stroke-width="2"/>
+      <path d="M66 38 L75 6 L84 38 Z" fill="#ffd36b" stroke="#f0b43c" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M69 28 L81 25 M71 18 L79 16" stroke="#f0b43c" stroke-width="2"/>
+      <circle cx="52" cy="38" r="10" fill="#ff9fd0"/><circle cx="62" cy="33" r="7" fill="#c7a0ff"/>
+      <ellipse cx="72" cy="86" rx="20" ry="12" fill="#ffe1ef"/><circle cx="66" cy="84" r="2" fill="#d98bb3"/><circle cx="78" cy="84" r="2" fill="#d98bb3"/>
+      ${eyes(64,64,12)}${blush(64,74,25)}${smile(72,91,6)}`),
+     l:["Pédale, et je te transforme en arc-en-ciel 🌈","Chaque watt fait pousser une paillette sur ma corne ✨","Les licornes ne transpirent pas, elles scintillent. Toi aussi !","Allez, on galope jusqu'aux nuages !"]},
+    {n:'Norbert le narval', a: svg(`
+      <path d="M96 70 Q112 54 116 64 Q108 72 116 82 Q110 90 96 78 Z" fill="#8ea8ff"/>
+      <ellipse cx="58" cy="72" rx="44" ry="33" fill="#9fb6ff"/><ellipse cx="56" cy="88" rx="30" ry="14" fill="#e3ebff"/>
+      <path d="M54 42 L58 4 L62 42 Z" fill="#fff4cc" stroke="#e8cf86" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M55 33 L61 30 M56 23 L60 20 M57 14 L59 12" stroke="#e8cf86" stroke-width="2"/>
+      <path d="M18 60 Q58 34 98 60" fill="none" stroke="#ff5fae" stroke-width="9" stroke-linecap="round"/>
+      <circle cx="84" cy="70" r="3" fill="#7d95f0"/><circle cx="90" cy="80" r="2.5" fill="#7d95f0"/><circle cx="26" cy="72" r="2.5" fill="#7d95f0"/>
+      <path d="M30 94 Q18 102 24 110 Q34 104 40 96 Z" fill="#8ea8ff"/>
+      ${eyes(56,72,13)}${blush(56,82,25)}${mouth(56,85)}`),
+     l:["Je suis la licorne des mers, et je te dis : FONCE 🌊","J'ai mis mon bandeau, c'est sérieux maintenant.","Ma corne capte tes watts. Signal excellent !","Nage… euh, pédale plus vite !"]},
+    {n:'Lola la lama', a: svg(`
+      <ellipse cx="42" cy="20" rx="6" ry="13" fill="#fff1dc" stroke="#ecd3ae" stroke-width="2" transform="rotate(-15 42 20)"/>
+      <ellipse cx="78" cy="20" rx="6" ry="13" fill="#fff1dc" stroke="#ecd3ae" stroke-width="2" transform="rotate(15 78 20)"/>
+      <rect x="40" y="62" width="40" height="58" rx="18" fill="#fff1dc" stroke="#ecd3ae" stroke-width="2"/>
+      <ellipse cx="60" cy="50" rx="28" ry="26" fill="#fff1dc" stroke="#ecd3ae" stroke-width="2"/>
+      <circle cx="49" cy="27" r="9" fill="#ffe0b5"/><circle cx="60" cy="23" r="10" fill="#ffe0b5"/><circle cx="71" cy="27" r="9" fill="#ffe0b5"/>
+      ${heart(47,48,10,'#ff4fa3')}${heart(73,48,10,'#ff4fa3')}<path d="M55 45 L65 45" stroke="#c41f74" stroke-width="2.5"/>
+      <ellipse cx="60" cy="65" rx="12" ry="8" fill="#ffe6c7"/>${smile(60,65,5)}
+      <path d="M40 82 Q60 92 80 82 L80 91 Q60 101 40 91 Z" fill="#a874ff"/><path d="M70 90 L76 108 L82 92 Z" fill="#a874ff"/>`),
+     l:["Je crache pas, je t'encourage 💖","Trop stylé·e sur ce vélo, j'adore.","Garde le rythme, moi je garde mes lunettes.","Les cœurs sur mes lunettes ? C'est pour toi."]},
+    {n:"Axelle l'axolotl", a: svg(`
+      <ellipse cx="20" cy="44" rx="14" ry="6" fill="#ff6fa8" transform="rotate(-30 20 44)"/><ellipse cx="14" cy="62" rx="14" ry="6" fill="#ff6fa8"/><ellipse cx="20" cy="80" rx="14" ry="6" fill="#ff6fa8" transform="rotate(30 20 80)"/>
+      <ellipse cx="100" cy="44" rx="14" ry="6" fill="#ff6fa8" transform="rotate(30 100 44)"/><ellipse cx="106" cy="62" rx="14" ry="6" fill="#ff6fa8"/><ellipse cx="100" cy="80" rx="14" ry="6" fill="#ff6fa8" transform="rotate(-30 100 80)"/>
+      <path d="M50 36 L60 6 L70 36 Z" fill="#8fe8d4" stroke="#4fcdb0" stroke-width="2" stroke-linejoin="round"/><circle cx="60" cy="6" r="5" fill="#ffd36b"/>
+      <ellipse cx="60" cy="64" rx="42" ry="32" fill="#ffc0da"/>
+      <circle cx="34" cy="50" r="3" fill="#ff9cc4"/><circle cx="86" cy="52" r="3.5" fill="#ff9cc4"/><circle cx="80" cy="44" r="2" fill="#ff9cc4"/>
+      ${eyes(60,60,18,6)}${blush(60,72,30)}<path d="M46 74 Q60 86 74 74" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`),
+     l:["Je souris tout le temps, mais là c'est grâce à toi !","Les axolotls régénèrent, toi tu brûles. Équipe parfaite.","C'est la fête dans mes branchies 🎉","Wouhou, regarde-moi cette cadence !"]},
+    {n:'Speedy le paresseux', a: svg(`
+      <circle cx="60" cy="62" r="40" fill="#c9a27e"/><ellipse cx="60" cy="66" rx="31" ry="26" fill="#f4dfc5"/>
+      <ellipse cx="46" cy="62" rx="11" ry="8" fill="#7a5235" transform="rotate(-20 46 62)"/><ellipse cx="74" cy="62" rx="11" ry="8" fill="#7a5235" transform="rotate(20 74 62)"/>
+      ${eyes(60,62,14,4.5)}<ellipse cx="60" cy="73" rx="6" ry="4" fill="#5a3a24"/>${smile(60,80,6)}
+      <path d="M24 44 Q60 22 96 44" fill="none" stroke="#ff5fae" stroke-width="8" stroke-linecap="round"/>
+      <text x="96" y="22" font-size="14" font-weight="900" fill="#a874ff" font-family="Nunito,sans-serif">z</text><text x="104" y="12" font-size="10" font-weight="900" fill="#a874ff" font-family="Nunito,sans-serif">z</text>`),
+     l:["Je suis fatigué rien qu'à te regarder. Bravo.","Moi je fais 2 mètres à l'heure. Toi ?? Respect.","J'ai mis mon bandeau. C'est mon sport de l'année.","Continue, je te soutiens… depuis ma branche."]},
+    {n:'Capu le capybara', a: svg(`
+      <rect x="18" y="40" width="84" height="66" rx="30" fill="#c48a5a"/>
+      <circle cx="30" cy="45" r="8" fill="#a8724a"/><circle cx="90" cy="45" r="8" fill="#a8724a"/>
+      <rect x="34" y="70" width="52" height="34" rx="16" fill="#dcab80"/>
+      <circle cx="60" cy="30" r="13" fill="#ffa630"/><path d="M60 17 Q66 7 75 11 Q69 20 60 17 Z" fill="#5fcf7a"/>
+      <path d="M38 60 Q44 55 50 60 M70 60 Q76 55 82 60" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>
+      <ellipse cx="54" cy="80" rx="2.5" ry="2" fill="${INK}"/><ellipse cx="66" cy="80" rx="2.5" ry="2" fill="${INK}"/>
+      ${smile(60,88,6)}${blush(60,70,30)}`),
+     l:["Zen. Respire. Pédale. Respire.","Je suis l'animal le plus chill du monde, et même moi je suis impressionné.","J'ai un yuzu sur la tête, toi des mollets d'acier.","Paix intérieure, watts extérieurs."]},
+    {n:'Gisèle la pingouine', a: svg(`
+      <ellipse cx="28" cy="72" rx="8" ry="20" fill="#2f2c4a" transform="rotate(25 28 72)"/><ellipse cx="92" cy="72" rx="8" ry="20" fill="#2f2c4a" transform="rotate(-25 92 72)"/>
+      <ellipse cx="48" cy="108" rx="9" ry="5" fill="#ffa630"/><ellipse cx="72" cy="108" rx="9" ry="5" fill="#ffa630"/>
+      <ellipse cx="60" cy="66" rx="32" ry="40" fill="#3d3a5c"/><ellipse cx="60" cy="72" rx="22" ry="30" fill="#fff"/>
+      <path d="M24 90 L32 81 L38 92 L46 81 L52 92 L60 81 L68 92 L74 81 L82 92 L88 81 L96 90 Q60 108 24 90 Z" fill="#ff9fd0" stroke="#ff5fae" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M54 62 L66 62 L60 70 Z" fill="#ffa630"/>
+      ${eyes(60,52,10,4.5)}${blush(60,63,18)}
+      <path d="M60 28 L46 20 L46 36 Z M60 28 L74 20 L74 36 Z" fill="#ff4fa3"/><circle cx="60" cy="28" r="4" fill="#ff8fc8"/>`),
+     l:["Je danse le lac des cygnes pour toi 🩰","Pirouette ! Encore ! Plus vite !","Je glisse sur la banquise, toi vers ton record.","Tutu rose et moral d'acier."]},
+    {n:'Gégé la grenouille cowboy', a: svg(`
+      <ellipse cx="60" cy="76" rx="42" ry="30" fill="#7ddc8a"/>
+      <circle cx="38" cy="54" r="15" fill="#7ddc8a"/><circle cx="82" cy="54" r="15" fill="#7ddc8a"/>
+      <circle cx="38" cy="55" r="9" fill="#fff"/><circle cx="82" cy="55" r="9" fill="#fff"/>
+      <circle cx="40" cy="57" r="5" fill="${INK}"/><circle cx="84" cy="57" r="5" fill="${INK}"/><circle cx="41.5" cy="55.5" r="1.8" fill="#fff"/><circle cx="85.5" cy="55.5" r="1.8" fill="#fff"/>
+      <path d="M40 36 Q42 10 60 14 Q78 10 80 36 Z" fill="#c9844a"/><rect x="41" y="29" width="38" height="6" fill="#ff5fae"/>
+      <path d="M14 38 Q60 50 106 38 Q101 29 91 33 Q60 42 29 33 Q19 29 14 38 Z" fill="#b5713b"/>
+      <path d="M36 82 Q60 100 84 82" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/>${blush(60,80,32)}`),
+     l:["Yee-haw ! On attrape ce bonbon au lasso 🤠","Saute pas, pédale !","Ce saloon a besoin d'un·e champion·ne. C'est toi.","Plus vite que ton ombre, partenaire !"]},
+    {n:'Octavie la pieuvre', a: svg(`
+      <g fill="none" stroke="#c58cff" stroke-width="12" stroke-linecap="round">
+        <path d="M38 76 Q26 94 36 106"/><path d="M50 80 Q44 100 52 112"/><path d="M70 80 Q76 100 68 112"/><path d="M82 76 Q94 94 84 106"/>
+        <path d="M32 66 Q14 58 16 38"/><path d="M88 66 Q106 58 104 38"/></g>
+      <circle cx="16" cy="32" r="12" fill="#ffd36b"/><circle cx="104" cy="32" r="12" fill="#ffd36b"/>
+      <circle cx="11" cy="28" r="4" fill="#ffe79a"/><circle cx="20" cy="36" r="4" fill="#ffe79a"/><circle cx="99" cy="28" r="4" fill="#ffe79a"/><circle cx="108" cy="36" r="4" fill="#ffe79a"/>
+      <ellipse cx="60" cy="54" rx="34" ry="32" fill="#c58cff"/>
+      <circle cx="44" cy="34" r="4" fill="#dcb6ff"/><circle cx="76" cy="32" r="3" fill="#dcb6ff"/><circle cx="84" cy="44" r="2.5" fill="#dcb6ff"/>
+      ${eyes(60,54,13)}${blush(60,64,23)}${mouth(60,67)}`),
+     l:["Huit bras pour t'applaudir 👏👏👏👏","Go go go go go go go go !","Je suis ta pom-pom girl officielle.","Allez allez allez, tentacules en l'air !"]},
+  ];
+
+  let buddyT = null, lastBuddy = -1, nextBuddyAt = 0;
+  function showBuddy(i, line){
+    if (i == null){ do { i = Math.floor(Math.random()*BUDDIES.length); } while (i === lastBuddy && BUDDIES.length > 1); }
+    lastBuddy = i; const b = BUDDIES[i];
+    $('buddyAv').innerHTML = b.a;
+    $('buddyTxt').innerHTML = `<small>${b.n}</small>${line || b.l[Math.floor(Math.random()*b.l.length)]}`;
+    $('buddy').classList.add('show');
+    clearTimeout(buddyT); buddyT = setTimeout(hideBuddy, 6500);
+  }
+  function hideBuddy(){ $('buddy').classList.remove('show'); }
+  $('buddy').onclick = hideBuddy;
+  function maybeBuddy(){
+    const now = Date.now();
+    if (!nextBuddyAt){ nextBuddyAt = now + (demoTimer ? 15000 : 60000); return; }
+    if (now < nextBuddyAt || document.querySelector('.sheet.show')) return;
+    showBuddy();
+    nextBuddyAt = now + (demoTimer ? 35000 + Math.random()*20000 : 120000 + Math.random()*90000);
+  }
+  function renderGallery(){
+    $('gallery').innerHTML = BUDDIES.map((b,i) => `<div class="gcard" data-buddy="${i}">${b.a}<div class="n">${b.n}</div><div class="q">${b.l[0]}</div></div>`).join('');
+  }
+  $('gallery').onclick = e => { const c = e.target.closest('[data-buddy]'); if (!c) return; closeSheets(); setTimeout(() => showBuddy(+c.dataset.buddy), 250); };
+  $('aGallery').onclick = () => { renderGallery(); openSheet('sheetGallery'); };
+  $('wFace').innerHTML = BUDDIES[Math.floor(Math.random()*BUDDIES.length)].a;
+
+  // ---------- Application installable (PWA) ----------
+  let installEvt = null;
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  function refreshInstall(){
+    $('btnInstall').classList.toggle('hidden', !installEvt);
+    $('aInstall').classList.toggle('hidden', !installEvt);
+  }
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; refreshInstall(); });
+  window.addEventListener('appinstalled', () => { installEvt = null; refreshInstall(); toast('📲 Application installée !'); confetti(80); });
+  async function install(){
+    if (!installEvt) return;
+    closeSheets(); installEvt.prompt();
+    try{ await installEvt.userChoice; }catch(e){}
+    installEvt = null; refreshInstall();
+  }
+  $('btnInstall').onclick = install; $('aInstall').onclick = install;
+  // Sur iPhone/iPad (Safari), pas de bouton : on explique la marche à suivre
+  if (!standalone && /iphone|ipad|ipod/i.test(navigator.userAgent)) $('iosInstall').classList.remove('hidden');
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http'))
+    navigator.serviceWorker.register('sw.js').catch(e => log('Service worker : '+e.message));
 
   // ---------- Démarrage ----------
   $('btnConnect').onclick = connect;
