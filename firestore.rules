@@ -1,0 +1,56 @@
+rules_version = '2';
+
+// Règles Firestore de Home Trainer (multi-familles).
+//  - admins/{email}         : super-admins, créés À LA MAIN dans la console (peuvent créer des familles)
+//  - families/{fid}         : { name, emails: [...], managers: [...] }  (emails en minuscules)
+//  - families/{fid}/members, sessions, boosts, challenges, grants
+// Un membre (email dans « emails ») lit et écrit les données de sa famille ;
+// seuls les managers (ou un super-admin) modifient la famille et ses membres.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signed()      { return request.auth != null && request.auth.token.email_verified == true; }
+    function email()       { return request.auth.token.email.lower(); }
+    function superAdmin()  { return signed() && exists(/databases/$(database)/documents/admins/$(email())); }
+    function famille(fid)  { return get(/databases/$(database)/documents/families/$(fid)).data; }
+    function membre(fid)   { return signed() && email() in famille(fid).emails; }
+    function manager(fid)  { return signed() && email() in famille(fid).managers; }
+
+    function nombre(d, k, max) { return !(k in d) || (d[k] is number && d[k] >= 0 && d[k] <= max); }
+    function sessionValide(d) {
+      return d.memberId is string && d.memberId.size() < 40 && d.start is number
+        && nombre(d, 'elapsed', 6 * 3600) && nombre(d, 'kcal', 5000) && nombre(d, 'points', 20000)
+        && nombre(d, 'avgP', 2500) && nombre(d, 'maxP', 3000) && nombre(d, 'dist', 300)
+        && (!('watts' in d) || (d.watts is list && d.watts.size() <= 400));
+    }
+    function familleValide(d) {
+      return d.name is string && d.name.size() < 60 && d.emails is list && d.managers is list
+        && d.emails.size() <= 30 && d.managers.size() <= 30;
+    }
+
+    // Chacun peut seulement vérifier s'il est lui-même super-admin
+    match /admins/{e} {
+      allow get: if signed() && e == email();
+      allow list, write: if false;
+    }
+
+    match /families/{fid} {
+      allow get:    if membre(fid) || superAdmin();
+      allow list:   if superAdmin() || (signed() && email() in resource.data.emails);
+      allow create: if superAdmin() && familleValide(request.resource.data);
+      allow update: if (manager(fid) || superAdmin()) && familleValide(request.resource.data);
+      allow delete: if superAdmin();
+
+      match /members/{id}     { allow read: if membre(fid) || superAdmin();
+                                allow write: if manager(fid) || superAdmin(); }
+      match /sessions/{id}    { allow read, delete: if membre(fid) || superAdmin();
+                                allow create, update: if (membre(fid) || superAdmin()) && sessionValide(request.resource.data); }
+      match /boosts/{id}      { allow read, write: if membre(fid) || superAdmin(); }
+      match /challenges/{id}  { allow read, write: if membre(fid) || superAdmin(); }
+      match /grants/{id}      { allow read, write: if membre(fid) || superAdmin(); }   // l'appli réserve « Accorder » aux adultes
+      match /screenUsage/{id} { allow read, write: if membre(fid) || superAdmin(); }
+    }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}

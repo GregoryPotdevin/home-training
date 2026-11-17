@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mascottes qui pédalent · démo</title>
+<style>
+  body{margin:0;font-family:system-ui,sans-serif;background:linear-gradient(#fff0f7,#efe6ff);color:#3b1f3a}
+  .wrap{max-width:1000px;margin:0 auto;padding:20px}
+  h1{margin:0 0 4px;font-size:26px}
+  .big{background:#fff;border-radius:22px;padding:12px;box-shadow:0 10px 30px -18px rgba(150,40,120,.5)}
+  .big .stage{height:230px}
+  .ctrl{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-top:10px;font-weight:700}
+  input[type=range]{width:200px;accent-color:#ff4fa3}
+  .row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:16px}
+  .cell{background:#fff;border-radius:16px;padding:6px;text-align:center;font-weight:800;font-size:13px}
+  .cell .stage{height:110px}
+  .gr{display:grid;grid-template-columns:150px repeat(5,1fr);gap:6px;align-items:center;margin-top:6px}
+  .gr .nm{font-weight:800;font-size:13px}
+  .gr .im{background:#fff;border-radius:12px;padding:2px}
+  .gr .im svg{width:100%;height:auto;display:block}
+  .gr.hd div{font-weight:800;font-size:12px;text-align:center;color:#8f7590}
+</style></head><body><div class="wrap">
+<h1>Mascottes qui pédalent</h1>
+<div style="color:#8f7590;font-weight:600;margin-bottom:12px">Squelette commun (vélo, pédalier, jambes en cinématique inverse, expressions, sueur, vapeur) + peau interchangeable.</div>
+<div class="big"><div class="stage" id="big"></div>
+  <div class="ctrl">
+    <label>Mascotte <select id="who"></select></label>
+    <label>Effort <input type="range" id="lvl" min="0" max="4" value="2"> <span id="lvlTxt"></span></label>
+    <label>Cadence <input type="range" id="cad" min="40" max="120" value="85"> <span id="cadTxt"></span></label>
+  </div></div>
+<div class="row" id="row"></div>
+<h2 style="margin:26px 0 6px;font-size:20px">Toutes les mascottes</h2>
+<div id="grid"></div>
+</div>
+<script src="js/mascot.js"></script>
+<script>
+  const M = HTMascot, $ = id => document.getElementById(id);
+  $('who').innerHTML = M.list.map(m => `<option value="${m.id}">${m.n}</option>`).join('');
+  function upd(){ const l = +$('lvl').value, c = +$('cad').value; $('lvlTxt').textContent = M.levels[l]; $('cadTxt').textContent = c + ' rpm';
+    M.mount($('big'), $('who').value, l, 60/c);
+    document.querySelectorAll('.cell .stage').forEach((el, i) => M.mount(el, $('who').value, i, 60/c)); }
+  $('row').innerHTML = M.levels.map(n => `<div class="cell"><div class="stage"></div>${n}</div>`).join('');
+  ['who','lvl','cad'].forEach(id => $(id).oninput = upd); upd();
+  $('grid').innerHTML = `<div class="gr hd"><div></div>${M.levels.map(l => `<div>${l}</div>`).join('')}</div>` +
+    M.list.map(m => `<div class="gr"><div class="nm">${m.n}</div>${M.levels.map((l, i) => `<div class="im">${M.svg(m.id, i)}</div>`).join('')}</div>`).join('');
+</script>
+</body></html>
