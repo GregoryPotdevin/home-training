@@ -1417,6 +1417,18 @@
     migrateOld(id);
     applyTheme(); renderOff(); updateUI(); famChanged();
   }
+  // Connecté avec un compte Google : on prend directement le profil qui porte cet email
+  // (une fois par famille et par session ; « Qui pédale ? » reste accessible pour un appareil partagé)
+  const autoDone = {};
+  function autoMe(){
+    const em = myEmail(); if (!em || isLocalFam() || autoDone[famId]) return false;
+    const m = members.list().find(x => (x.email || '').toLowerCase() === em);
+    if (!m) return false;
+    autoDone[famId] = true;
+    $('pickPage').classList.remove('show');
+    if (me !== m.id){ setMe(m.id); toast(`Salut ${m.name} ! 👋`); }
+    return true;
+  }
   // Les séances d'avant les profils sont rattachées au premier profil choisi (famille locale)
   function migrateOld(id){
     if (famId !== 'local' || store.get('ht.migrated', 0)) return;
@@ -1434,7 +1446,7 @@
     if (me && !memberOf(me)) me = null;
     sess.memberId = me; activeBoost = null; streakCache.t = 0; badgeCache.t = 0;
     subscribeFamily(); applyTheme(); renderOff(); updateUI();
-    if (!quiet){ toast(`🏠 ${curFam().name}`); if (members.list().length) showPicker(); }
+    if (!quiet){ toast(`🏠 ${curFam().name}`); if (members.list().length && !autoMe()) showPicker(); }
     famChanged();
   }
 
@@ -1983,7 +1995,7 @@
     mgr = null; closeSheets(); famChanged();
     if (myM) setMe(myM.id);
     toast(`🏠 Famille « ${fam.name} » créée !`); confetti(160);
-    showPicker();
+    if (!(myM && myM.email)) showPicker();
   }
   $('membersBody').addEventListener('input', e => {
     if (!mgr) return;
@@ -2124,6 +2136,7 @@
   function onFamChanged(){
     if (me && !memberOf(me) && members.list().length) me = null;
     badgeCache.t = 0;
+    if (members.loaded) autoMe();
     applyTheme(); renderWho(); checkReceived(); checkBoosts(); checkBoss(); checkBadges();
     if ($('famPage').classList.contains('show')) renderFamily();
     if ($('sheetMembers').classList.contains('show') && mgr && !mgr.edit && mgr.mode !== 'create') renderMgr();
@@ -2239,7 +2252,8 @@
   if (me && !memberOf(me)) me = null;
   if (!sess.memberId && me) sess.memberId = me;
   applyTheme(); renderWho();
-  if (!me || members.list().length > 1) showPicker();
+  // Famille synchronisée déjà connue : on attend la connexion, qui choisira le bon profil via l'email
+  if (!me || (members.list().length > 1 && isLocalFam())) showPicker();
   if (window.HTCloud) onCloud(window.HTCloud);
   syncFun(); applyMode(false); setView(); updateUI();
   setInterval(tick, 1000);
