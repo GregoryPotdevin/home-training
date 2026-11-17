@@ -1,5 +1,5 @@
 // Service worker : l'app s'ouvre même hors connexion internet.
-const CACHE = 'home-trainer-v7';
+const CACHE = 'home-trainer-v8';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './js/config.js', './js/cloud.js', './js/mascot.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png',
   './icons/favicon-32.png', './icons/icon.svg'];

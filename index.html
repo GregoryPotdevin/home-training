@@ -348,6 +348,13 @@
   body[data-theme="blocs"] .av44{border:3px solid #1e1e1e;background:#a9a9a9}
   body[data-theme="blocs"] .rank{border-top:3px dashed #555}
 
+  /* ---------- Chargement ---------- */
+  .boot{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+  .boot img{width:84px;height:84px;border-radius:22px;box-shadow:var(--shadow)}
+  .spin{width:34px;height:34px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);animation:spin .8s linear infinite}
+  .boottxt{font-weight:800;color:var(--muted)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
   /* ---------- Mascotte qui pédale ---------- */
   .rider{position:fixed;left:0;right:0;bottom:0;z-index:20;pointer-events:none;height:calc(146px + var(--sb));padding-bottom:var(--sb);
     display:flex;justify-content:center;background:linear-gradient(to bottom,transparent,var(--bg) 42%)}
@@ -551,8 +558,9 @@
   <section class="off-only">
     <div class="brandrow">
       <div class="brand"><img src="icons/icon-192.png" alt=""><div>Home <span>Trainer</span></div></div>
-      <button class="who hidden" id="btnWho"><span class="mini" id="whoAv"></span><span id="whoName"></span> ▾</button>
+      <button class="who hidden" id="btnWho"><span class="mini" id="whoAv"></span><span id="whoName"></span><span id="whoCaret"> ▾</span></button>
     </div>
+    <div class="card resume hidden" id="actingFor"></div>
     <div class="welcome">
       <div class="face" id="wFace"></div>
       <h2 id="wTitle">Prêt·e à transpirer ?</h2>
@@ -580,7 +588,8 @@
   <!-- ===== Écran connecté ===== -->
   <section class="live-only">
     <div class="top">
-      <div class="pill"><div class="dot" id="dot"></div><span id="statusTxt">Connecté</span></div>
+      <div class="who" id="liveWho" style="flex:none"></div>
+      <div class="pill" style="flex:1"><div class="dot" id="dot"></div><span id="statusTxt">Connecté</span></div>
       <button class="more" id="btnMore">Actions <span style="font-size:20px;line-height:0">⋯</span></button>
     </div>
 
@@ -678,6 +687,11 @@
 <!-- ===== Mascotte qui pédale (en séance) ===== -->
 <div class="rider hidden" id="rider"><div id="riderSvg"></div><div class="riderLbl" id="riderLbl"></div></div>
 
+<!-- ===== Chargement ===== -->
+<div class="page show" id="bootPage" style="z-index:28"><div class="boot">
+  <img src="icons/icon-192.png" alt=""><div class="spin"></div><div class="boottxt">Chargement…</div>
+</div></div>
+
 <!-- ===== Connexion ===== -->
 <div class="page" id="loginPage" style="z-index:27"><div class="wrap" style="text-align:center">
   <div class="brand" style="justify-content:center;margin-top:14px"><img src="icons/icon-192.png" alt=""><div>Home <span>Trainer</span></div></div>
@@ -693,6 +707,7 @@
 <div class="page" id="pickPage"><div class="wrap">
   <div class="brand" style="justify-content:center;margin-top:10px"><div>Qui <span>pédale</span> ?</div></div>
   <div style="text-align:center"><button class="who" id="pickFamBtn" style="display:inline-flex">🏠 <span id="pickFam"></span> ▾</button></div>
+  <div class="hint" id="pickHint" style="text-align:center"></div>
   <div class="pick" id="pickGrid"></div>
   <button class="linkbtn" id="pickManage">⚙️ Gérer la famille</button>
 </div></div>
@@ -916,8 +931,12 @@
   });
 
   // ---------- Démo ----------
+  // La démo tourne sur une séance jetable : rien n'est enregistré, rien n'est gagné ni débloqué
+  let realSess = null;
   function startDemo(){
     showMsg(null); let t = 0;
+    if (sess.elapsed >= 30) saveCurrent();
+    realSess = sess; sess = blankSession(); sess.demo = true; hist.length = 0; syncFun();
     demoTimer = setInterval(() => {
       t++; const v = settings.vals[settings.mode]; let target;
       live.cadence = 85 + Math.sin(t/7)*6 + (Math.random()-.5)*3;
@@ -930,14 +949,17 @@
     }, 500);
     $('statusTxt').textContent = 'Mode démo'; $('dot').className = 'dot demo';
     setView(); applyMode(false);
-    coach('🎮','Mode démo','Les chiffres sont simulés, mais la séance est enregistrée comme une vraie.');
+    coach('🎮','Mode démo','Chiffres simulés : rien n\'est enregistré ni gagné.');
+    $('savedTxt').textContent = '🎮 Mode démo : rien n\'est enregistré (ni historique, ni points, ni badges).';
   }
   function stopDemo(notify){
     if (!demoTimer) return;
     clearInterval(demoTimer); demoTimer = null;
     live.power = live.cadence = live.speed = 0; live.hr = null;
-    saveCurrent(); setView();
-    if (notify && sess.elapsed > 0) toast('Démo arrêtée — séance gardée');
+    sess = realSess || blankSession(); realSess = null; hist.length = 0; syncFun();
+    $('savedTxt').textContent = 'Sauvegarde automatique toutes les 30 s sur cet appareil.';
+    setView(); updateUI();
+    if (notify) toast('Démo terminée : rien n\'a été enregistré');
   }
 
   // ---------- Séance & historique ----------
@@ -956,6 +978,7 @@
   function removeFromHistory(id){ if (sessions.get(id)) sessions.del(id); }
   let lastSave = Date.now(), savedAt = sess.elapsed;
   function saveCurrent(){
+    if (sess.demo) return;                       // démo : jamais enregistrée
     sess.updated = Date.now(); store.set(K_CUR, sess);
     if (sess.elapsed >= 30) upsertHistory();      // une séance d'au moins 30 s apparaît dans l'historique
     if (activeBoost) boosts.put(activeBoost, {silent:true});
@@ -968,10 +991,12 @@
   }
   function newSession(){
     sess = blankSession(); savedAt = 0; hist.length = 0; live.trainerKcal = null;
-    syncFun(); store.set(K_CUR, sess); updateUI(); renderOff();
+    if (demoTimer) sess.demo = true; else store.set(K_CUR, sess);
+    syncFun(); updateUI(); renderOff();
   }
   function endSession(){
     closeSheets();
+    if (sess.demo){ toast('🎮 En démo, rien n\'est enregistré'); newSession(); return; }
     if (sess.elapsed < 30){ toast('Séance trop courte (< 30 s), non enregistrée'); newSession(); return; }
     saveCurrent();
     const s = summary(sess);
@@ -1041,7 +1066,9 @@
   // ---------- Boucle principale ----------
   function tick(){
     const now = performance.now();
-    const dt = lastTick ? Math.min(3,(now-lastTick)/1000) : 0; lastTick = now;
+    const raw = lastTick ? (now-lastTick)/1000 : 0, dt = Math.min(3, raw); lastTick = now;
+    // Écran éteint ou appli en arrière-plan : le téléphone met l'appli en pause, ce temps-là n'est pas compté
+    if (raw > 15 && isLive()) toast(`⏸️ Appli en pause ${Math.round(raw/60) || 1} min (écran éteint ?) : ce temps n'a pas été compté`);
     const active = isLive() && (live.power > 0 || live.cadence > 0);
     if (active && dt > 0){
       sess.elapsed += dt; sess.kJ += live.power*dt/1000; sess.dist += live.speed*dt/3600;
@@ -1057,7 +1084,7 @@
     }
     if (isLive()){ hist.push(active ? live.power : 0); if (hist.length > 120) hist.shift(); }
     // Sauvegarde auto toutes les 30 s tant qu'on est connecté et qu'on produit de la puissance
-    if (isLive() && live.power > 0 && sess.elapsed - savedAt >= 30){ saveCurrent(); flashSaved(); }
+    if (isLive() && !sess.demo && live.power > 0 && sess.elapsed - savedAt >= 30){ saveCurrent(); flashSaved(); }
     updateUI();
   }
 
@@ -1405,6 +1432,13 @@
     if (m){ $('whoAv').innerHTML = avatarSvg(m); $('whoName').textContent = m.name;
       if ($('wFace').dataset.for !== m.id + m.avatar){ $('wFace').innerHTML = avatarSvg(m); $('wFace').dataset.for = m.id + m.avatar; } }
     $('famBtnTxt').textContent = `${curFam().name} : classement, défis, boss, badges`;
+    const a = accountMember();
+    $('whoCaret').style.display = a && isKid(a) ? 'none' : '';
+    $('liveWho').innerHTML = m ? `<span class="mini">${avatarSvg(m)}</span>${esc(m.name)}` : '';
+    $('liveWho').style.display = m ? '' : 'none';
+    const acting = a && m && a.id !== m.id;
+    $('actingFor').classList.toggle('hidden', !acting);
+    if (acting) $('actingFor').innerHTML = `<div class="txt"><b>🧒 Tu pédales pour ${esc(m.name)}</b><br>Sa séance et ses points compteront pour ${esc(m.name)}.</div><button class="btn" data-back="1">Revenir à moi</button>`;
   }
   function setMe(id){
     if (sess.elapsed > 0 && sess.memberId && sess.memberId !== id){
@@ -1412,10 +1446,17 @@
       newSession();
     }
     me = id; store.set(meKey(), id);
-    sess.memberId = id; store.set(K_CUR, sess);
+    sess.memberId = id; if (!sess.demo) store.set(K_CUR, sess);
     activeBoost = null; streakCache.t = 0; badgeCache.t = 0;
     migrateOld(id);
     applyTheme(); renderOff(); updateUI(); famChanged();
+  }
+  // Profil lié au compte Google connecté (null sans compte ou dans la famille de l'appareil)
+  const accountMember = () => { const em = myEmail(); return em && !isLocalFam() ? members.list().find(x => (x.email || '').toLowerCase() === em) || null : null; };
+  // Un adulte peut pédaler pour un enfant (dépannage) ; un enfant reste sur son profil
+  function pickList(){
+    const a = accountMember(); if (!a) return members.list();
+    return isKid(a) ? [a] : [a].concat(members.list().filter(m => isKid(m) && m.id !== a.id));
   }
   // Connecté avec un compte Google : on prend directement le profil qui porte cet email
   // (une fois par famille et par session ; « Qui pédale ? » reste accessible pour un appareil partagé)
@@ -1453,7 +1494,9 @@
   // ---------- « Qui pédale ? » ----------
   function showPicker(){
     $('pickFam').textContent = curFam().name;
-    $('pickGrid').innerHTML = members.list().map(m => `<button data-pick="${esc(m.id)}" class="${m.id===me?'cur':''}">${avatarSvg(m)}
+    const acc = accountMember();
+    $('pickHint').textContent = acc && !isKid(acc) ? `Pour dépanner, tu peux pédaler pour un enfant : sa séance comptera pour lui.` : '';
+    $('pickGrid').innerHTML = pickList().map(m => `<button data-pick="${esc(m.id)}" class="${m.id===me?'cur':''}">${avatarSvg(m)}
       <span class="n">${esc(m.name)}</span><span class="t">${THEMES[m.theme]?.e||''} ${ROLES[roleOf(m)].n}</span></button>`).join('')
       || '<div class="empty" style="grid-column:1/-1">Personne dans cette famille pour l\'instant.</div>';
     $('pickPage').classList.add('show');
@@ -1465,7 +1508,13 @@
   };
   $('pickManage').onclick = () => openMgr('manage');
   $('pickFamBtn').onclick = () => openMgr('switch');
-  $('btnWho').onclick = () => { if (!isLive()) showPicker(); };
+  $('btnWho').onclick = () => {
+    if (isLive()) return;
+    const a = accountMember();
+    if (a && isKid(a)) { toast('Ton profil est lié à ton compte 🙂'); return; }
+    showPicker();
+  };
+  $('actingFor').addEventListener('click', e => { if (e.target.closest('[data-back]')){ const a = accountMember(); if (a) { setMe(a.id); toast(`Re-salut ${a.name} ! 👋`); } } });
 
   // ---------- Calculs ----------
   const startOfDay = t => { const d = new Date(t); d.setHours(0,0,0,0); return d.getTime(); };
@@ -1477,7 +1526,7 @@
   // Séances d'un membre sur une période, séance en cours comprise (valeurs en direct)
   function sessLive(id, from = 0, to = Infinity){
     const l = sessions.list().filter(x => x.memberId === id && x.id !== sess.id && x.start >= from && x.start < to);
-    if (sess.memberId === id && sess.elapsed > 0 && sess.start >= from && sess.start < to)
+    if (!sess.demo && sess.memberId === id && sess.elapsed > 0 && sess.start >= from && sess.start < to)
       l.push({id:sess.id, memberId:id, start:sess.start, points:sess.points||0, kcal:kcalOf(sess), elapsed:sess.elapsed, dist:sess.dist, maxP:sess.maxP});
     return l;
   }
@@ -1529,7 +1578,7 @@
   const pendingBoostFor = id => boosts.list().filter(b => b.toId === id && (b.status === 'actif' || b.status === 'offert') && (b.remainingSec ?? 1) > 0)
     .sort((a,b) => (a.status === 'actif' ? -1 : 1) - (b.status === 'actif' ? -1 : 1))[0] || null;
   function boostTick(dt){
-    if (!me) return 1;
+    if (!me || sess.demo) return 1;              // démo : on ne consomme pas les boosts
     if (!activeBoost){
       const b = pendingBoostFor(me); if (!b) return 1;
       activeBoost = Object.assign({}, b, {status:'actif', remainingSec: b.remainingSec ?? CFG.boost.minutes*60, activatedAt: b.activatedAt || Date.now()});
@@ -2137,6 +2186,10 @@
     if (me && !memberOf(me) && members.list().length) me = null;
     badgeCache.t = 0;
     if (members.loaded) autoMe();
+    if (booting && cloudOn() && listLoaded && (isLocalFam() || members.loaded)) bootDone(true);
+    // famille synchronisée sans profil à mon email (appareil partagé) : on demande qui pédale
+    if (!booting && !me && !isLocalFam() && members.loaded && members.list().length && !isLive()
+        && !$('pickPage').classList.contains('show') && !$('sheetMembers').classList.contains('show')) showPicker();
     applyTheme(); renderWho(); checkReceived(); checkBoosts(); checkBoss(); checkBadges();
     if ($('famPage').classList.contains('show')) renderFamily();
     if ($('sheetMembers').classList.contains('show') && mgr && !mgr.edit && mgr.mode !== 'create') renderMgr();
@@ -2147,7 +2200,13 @@
   }
 
   // ---------- Synchro cloud ----------
-  let famUnsubs = [], listUnsub = null, cloudWas = null, famPrompted = false, loginState = null;
+  let famUnsubs = [], listUnsub = null, cloudWas = null, famPrompted = false, loginState = null, booting = true, listLoaded = false;
+  function bootDone(pick){
+    if (!booting) return; booting = false;
+    $('bootPage').classList.remove('show');
+    if (pick && !isLive() && !$('loginPage').classList.contains('show') && !$('sheetMembers').classList.contains('show')
+        && (!me || (isLocalFam() && members.list().length > 1))) showPicker();
+  }
   // Écran de connexion : au démarrage quand la synchro est branchée et qu'on n'est pas connecté
   function renderLogin(){
     const hc = window.HTCloud || {state:'off'};
@@ -2175,7 +2234,10 @@
       await hc.signIn();
     }catch(e){ $('loginMsg').classList.remove('hidden'); $('loginMsg').textContent = 'Connexion impossible : ' + e.message; }
   };
-  $('loginSkip').onclick = () => { store.set('ht.skipLogin', 1); loginState = null; $('loginPage').classList.remove('show'); };
+  $('loginSkip').onclick = () => {
+    store.set('ht.skipLogin', 1); loginState = null; $('loginPage').classList.remove('show');
+    if (!isLive() && (!me || members.list().length > 1)) showPicker();
+  };
   function subscribeFamily(){
     famUnsubs.forEach(u => { try{ u(); }catch(e){} }); famUnsubs = [];
     allColls().forEach(c => c.loaded = false);
@@ -2194,9 +2256,10 @@
     const key = hc.state + '|' + (hc.user ? hc.user.email : '') + '|' + hc.isAdmin;
     if (key === cloudWas){ famChanged(); return; }
     cloudWas = key;
-    if (hc.state === 'signedIn') store.del('ht.skipLogin');
+    if (hc.state === 'signedIn') store.del('ht.skipLogin'); else listLoaded = false;
     if (hc.state !== 'signedIn'){ famPrompted = false; if (loginState === 'nofamily') loginState = null; }
     renderLogin();
+    if (hc.state === 'signedOut' || hc.state === 'error') bootDone(true);
     if (listUnsub){ try{ listUnsub(); }catch(e){} listUnsub = null; }
     if (hc.state === 'signedIn'){
       listUnsub = hc.watchFamilies(docs => {
@@ -2207,6 +2270,7 @@
         if (!families.length) families = [{id:'local', name:'Ma famille', local:true, emails:[], managers:[], createdAt:Date.now()}];
         saveFamilies();
         const mine = docs.filter(d => (d.emails || []).includes(hc.user.email));
+        listLoaded = true;
         if (!famPrompted && isLocalFam()){
           famPrompted = true;
           if (mine.length === 1) switchFamily(mine[0].id);
@@ -2252,8 +2316,8 @@
   if (me && !memberOf(me)) me = null;
   if (!sess.memberId && me) sess.memberId = me;
   applyTheme(); renderWho();
-  // Famille synchronisée déjà connue : on attend la connexion, qui choisira le bon profil via l'email
-  if (!me || (members.list().length > 1 && isLocalFam())) showPicker();
+  // Avec la synchro : écran de chargement jusqu'à savoir si on est connecté (puis connexion, profil auto ou « Qui pédale ? »)
+  if (!cloudConfigured()) bootDone(true); else setTimeout(() => { if (booting) bootDone(true); }, 7000);
   if (window.HTCloud) onCloud(window.HTCloud);
   syncFun(); applyMode(false); setView(); updateUI();
   setInterval(tick, 1000);
