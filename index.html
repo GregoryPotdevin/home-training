@@ -1438,7 +1438,7 @@
     $('liveWho').style.display = m ? '' : 'none';
     const acting = a && m && a.id !== m.id;
     $('actingFor').classList.toggle('hidden', !acting);
-    if (acting) $('actingFor').innerHTML = `<div class="txt"><b>🧒 Tu pédales pour ${esc(m.name)}</b><br>Sa séance et ses points compteront pour ${esc(m.name)}.</div><button class="btn" data-back="1">Revenir à moi</button>`;
+    if (acting) $('actingFor').innerHTML = `<div class="txt"><b>🔁 Tu pédales pour ${esc(m.name)}</b><br>Sa séance et ses points compteront pour ${esc(m.name)}.</div><button class="btn" data-back="1">Revenir à moi</button>`;
   }
   function setMe(id){
     if (sess.elapsed > 0 && sess.memberId && sess.memberId !== id){
@@ -1453,10 +1453,10 @@
   }
   // Profil lié au compte Google connecté (null sans compte ou dans la famille de l'appareil)
   const accountMember = () => { const em = myEmail(); return em && !isLocalFam() ? members.list().find(x => (x.email || '').toLowerCase() === em) || null : null; };
-  // Un adulte peut pédaler pour un enfant (dépannage) ; un enfant reste sur son profil
+  // Un adulte peut pédaler pour n'importe qui de la famille (dépannage) ; un enfant reste sur son profil
   function pickList(){
     const a = accountMember(); if (!a) return members.list();
-    return isKid(a) ? [a] : [a].concat(members.list().filter(m => isKid(m) && m.id !== a.id));
+    return isKid(a) ? [a] : [a].concat(members.list().filter(m => m.id !== a.id));
   }
   // Connecté avec un compte Google : on prend directement le profil qui porte cet email
   // (une fois par famille et par session ; « Qui pédale ? » reste accessible pour un appareil partagé)
@@ -1495,7 +1495,7 @@
   function showPicker(){
     $('pickFam').textContent = curFam().name;
     const acc = accountMember();
-    $('pickHint').textContent = acc && !isKid(acc) ? `Pour dépanner, tu peux pédaler pour un enfant : sa séance comptera pour lui.` : '';
+    $('pickHint').textContent = acc && !isKid(acc) ? `Pour dépanner, tu peux pédaler pour quelqu'un d'autre : la séance comptera pour lui.` : '';
     $('pickGrid').innerHTML = pickList().map(m => `<button data-pick="${esc(m.id)}" class="${m.id===me?'cur':''}">${avatarSvg(m)}
       <span class="n">${esc(m.name)}</span><span class="t">${THEMES[m.theme]?.e||''} ${ROLES[roleOf(m)].n}</span></button>`).join('')
       || '<div class="empty" style="grid-column:1/-1">Personne dans cette famille pour l\'instant.</div>';
