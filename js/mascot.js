@@ -157,7 +157,7 @@
     let s = '';
     // sol qui défile + traits de vitesse
     s += `<line x1="0" y1="116" x2="${W}" y2="116" stroke="${INK}" stroke-width="1.5" stroke-dasharray="14 10" stroke-dashoffset="${scroll}" opacity=".35"/>`;
-    if (level >= 3) for (let i = 0; i < level - 1; i++){ const y = 50 + i*14, x = ((scroll*3 + i*37) % 60); s += `<line x1="${8 + x}" y1="${y}" x2="${28 + x}" y2="${y}" stroke="${INK}" stroke-width="2" stroke-linecap="round" opacity=".25"/>`; }
+    if (level >= 3) for (let i = 0; i < level - 1; i++){ const y = 50 + i*14, x = 60 - ((scroll*3 + i*37) % 60); s += `<line x1="${8 + x}" y1="${y}" x2="${28 + x}" y2="${y}" stroke="${INK}" stroke-width="2" stroke-linecap="round" opacity=".25"/>`; }
     s += `<g transform="translate(${sx} ${sy})">`;
     // jambe du fond, roues, cadre
     s += leg(L2, shade(skin.limb), shade(skin.limbStroke), 6);
@@ -207,7 +207,7 @@
       if (now - (this.drawn||0) < 33) return; this.drawn = now;          // ~30 images/s suffisent
       const st = this.st, moving = this.cad > 0 && this.cad < 20, w = moving ? 2*Math.PI / this.cad : 0;
       const k = this.reduce ? .4 : 1;
-      st.t += dt; st.crank += w*dt*k; st.wheelA += w*1.8*dt*k; st.scroll -= (moving ? 60/this.cad : 0)*dt*k;
+      st.t += dt; st.crank += w*dt*k; st.wheelA += w*1.8*dt*k; st.scroll += (moving ? 60/this.cad : 0)*dt*k;   // le sol part vers l'arrière (vers la gauche)
       st.bob = moving ? Math.sin(st.crank*2)*(1 + st.level*.4) : 0;
       st.shake = this.reduce ? 0 : [0,0,0,.6,1.4][st.level];
       // particules
