@@ -63,6 +63,7 @@
     transform:skewX(-20deg);animation:shine 3.2s infinite}
   .connect:active{transform:scale(.98)}
   .connect .ico{font-size:26px}
+  #loginBtn .ico{font:900 20px Nunito,sans-serif;width:34px;height:34px;border-radius:50%;background:#fff;color:#4285f4;display:inline-flex;align-items:center;justify-content:center}
   @keyframes shine{0%,60%{left:-60%}100%{left:130%}}
   @keyframes pulse{0%,100%{box-shadow:0 16px 34px -12px rgba(255,79,163,.7),0 0 0 0 rgba(255,79,163,.35)}60%{box-shadow:0 16px 34px -12px rgba(255,79,163,.7),0 0 0 14px rgba(255,79,163,0)}}
   .linkbtn{background:none;color:var(--accent2);text-decoration:underline;text-underline-offset:3px;font-weight:800;padding:14px;width:100%}
@@ -676,6 +677,17 @@
 
 <!-- ===== Mascotte qui pédale (en séance) ===== -->
 <div class="rider hidden" id="rider"><div id="riderSvg"></div><div class="riderLbl" id="riderLbl"></div></div>
+
+<!-- ===== Connexion ===== -->
+<div class="page" id="loginPage" style="z-index:27"><div class="wrap" style="text-align:center">
+  <div class="brand" style="justify-content:center;margin-top:14px"><img src="icons/icon-192.png" alt=""><div>Home <span>Trainer</span></div></div>
+  <div class="welcome"><div class="face" id="loginFace"></div>
+    <h2 id="loginTitle">Bienvenue !</h2>
+    <p id="loginText">Connecte-toi avec ton compte Google pour retrouver ta famille, ses défis et ses stats sur tous tes appareils.</p></div>
+  <button class="connect" id="loginBtn"><span class="ico">G</span><span id="loginBtnTxt">Se connecter avec Google</span></button>
+  <div class="msg hidden" id="loginMsg"></div>
+  <button class="linkbtn" id="loginSkip">Continuer sans compte (tout reste sur cet appareil)</button>
+</div></div>
 
 <!-- ===== Qui pédale ? ===== -->
 <div class="page" id="pickPage"><div class="wrap">
@@ -2122,7 +2134,35 @@
   }
 
   // ---------- Synchro cloud ----------
-  let famUnsubs = [], listUnsub = null, cloudWas = null;
+  let famUnsubs = [], listUnsub = null, cloudWas = null, famPrompted = false, loginState = null;
+  // Écran de connexion : au démarrage quand la synchro est branchée et qu'on n'est pas connecté
+  function renderLogin(){
+    const hc = window.HTCloud || {state:'off'};
+    const signedOutNeed = cloudConfigured() && (hc.state === 'signedOut' || hc.state === 'error') && !store.get('ht.skipLogin', 0) && isLocalFam();
+    const show = signedOutNeed || loginState === 'nofamily';
+    $('loginPage').classList.toggle('show', show);
+    if (!show) return;
+    if (!$('loginFace').innerHTML) $('loginFace').innerHTML = BUDDIES[Math.floor(Math.random()*BUDDIES.length)].a;
+    if (loginState === 'nofamily'){
+      $('loginTitle').textContent = 'Pas encore de famille';
+      $('loginText').innerHTML = `Ton compte <b>${esc(hc.user && hc.user.email)}</b> ne fait partie d'aucune famille. Demande à un manager de t'ajouter avec cette adresse, puis reviens.`;
+      $('loginBtnTxt').textContent = 'Changer de compte';
+    } else {
+      $('loginTitle').textContent = 'Bienvenue !';
+      $('loginText').textContent = 'Connecte-toi avec ton compte Google pour retrouver ta famille, ses défis et ses stats sur tous tes appareils.';
+      $('loginBtnTxt').textContent = 'Se connecter avec Google';
+    }
+    $('loginMsg').classList.toggle('hidden', hc.state !== 'error');
+    if (hc.state === 'error') $('loginMsg').textContent = 'Erreur de connexion : ' + (hc.error || '');
+  }
+  $('loginBtn').onclick = async () => {
+    const hc = window.HTCloud; if (!hc) return;
+    try{
+      if (loginState === 'nofamily'){ loginState = null; famPrompted = false; await hc.signOut(); }
+      await hc.signIn();
+    }catch(e){ $('loginMsg').classList.remove('hidden'); $('loginMsg').textContent = 'Connexion impossible : ' + e.message; }
+  };
+  $('loginSkip').onclick = () => { store.set('ht.skipLogin', 1); loginState = null; $('loginPage').classList.remove('show'); };
   function subscribeFamily(){
     famUnsubs.forEach(u => { try{ u(); }catch(e){} }); famUnsubs = [];
     allColls().forEach(c => c.loaded = false);
@@ -2141,6 +2181,9 @@
     const key = hc.state + '|' + (hc.user ? hc.user.email : '') + '|' + hc.isAdmin;
     if (key === cloudWas){ famChanged(); return; }
     cloudWas = key;
+    if (hc.state === 'signedIn') store.del('ht.skipLogin');
+    if (hc.state !== 'signedIn'){ famPrompted = false; if (loginState === 'nofamily') loginState = null; }
+    renderLogin();
     if (listUnsub){ try{ listUnsub(); }catch(e){} listUnsub = null; }
     if (hc.state === 'signedIn'){
       listUnsub = hc.watchFamilies(docs => {
@@ -2151,7 +2194,13 @@
         if (!families.length) families = [{id:'local', name:'Ma famille', local:true, emails:[], managers:[], createdAt:Date.now()}];
         saveFamilies();
         const mine = docs.filter(d => (d.emails || []).includes(hc.user.email));
-        if (isLocalFam() && !store.get('ht.famChosen', 0) && mine.length === 1){ switchFamily(mine[0].id); }
+        if (!famPrompted && isLocalFam()){
+          famPrompted = true;
+          if (mine.length === 1) switchFamily(mine[0].id);
+          else if (mine.length > 1){ loginState = null; renderLogin(); openMgr('switch'); toast('🏠 Choisis ta famille'); }
+          else if (hc.isAdmin){ loginState = null; renderLogin(); openMgr('create'); toast('👋 Crée ta première famille'); }
+          else { loginState = 'nofamily'; renderLogin(); }
+        }
         famChanged();
       });
       toast(hc.isAdmin ? '☁️ Connecté · super-admin' : '☁️ Synchro active');
